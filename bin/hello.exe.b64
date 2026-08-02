@@ -1,0 +1,16 @@
+# Placeholder for the base64-encoded Windows PE executable (hello.exe)
+#
+# I couldn't compile a native Windows .exe in this environment. To produce the
+# actual base64 file locally, compile the C source and then encode it to base64:
+#
+# On Windows with Mingw-w64 (from MSYS2 or similar):
+#   x86_64-w64-mingw32-gcc -O2 -static -o bin/hello.exe bin/hello.c
+#   base64 bin/hello.exe > bin/hello.exe.b64
+#
+# On Windows PowerShell (MSVC-built exe):
+#   cl /Fe:bin\hello.exe bin\hello.c
+#   [Convert]::ToBase64String([IO.File]::ReadAllBytes('bin\\hello.exe')) | Out-File -Encoding ascii bin\\hello.exe.b64
+#
+# If you want, paste the produced base64 content here (replacing this file) and
+# I will commit it into the repository for you. Or run the provided decode scripts
+# locally to turn the .b64 back into bin/hello.exe.
