@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ScheduleDocument, LetterheadConfig } from '../types';
 import { generateShareableText } from '../utils/bengaliUtils';
-import { X, Share2, Copy, Check, Download, FileSpreadsheet, Edit3, RotateCcw, Award } from 'lucide-react';
+import { X, Share2, Copy, Check, Download, FileSpreadsheet, Edit3, RotateCcw, Award, Mail } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   document: ScheduleDocument;
   onSaveLetterhead?: (config: LetterheadConfig) => void;
+  onOpenGmailModal?: () => void;
 }
 
 export const ShareModal: React.FC<Props> = ({
@@ -15,6 +16,7 @@ export const ShareModal: React.FC<Props> = ({
   onClose,
   document,
   onSaveLetterhead,
+  onOpenGmailModal,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -193,24 +195,37 @@ export const ShareModal: React.FC<Props> = ({
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-4 font-sans">
           {/* Main Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            {onOpenGmailModal && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenGmailModal();
+                }}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg shadow-sm transition-all cursor-pointer"
+              >
+                <Mail className="w-4 h-4 text-white" />
+                <span>জি-মেইলে সরাসরি পাঠান</span>
+              </button>
+            )}
+
             <button
               onClick={handleCopyText}
-              className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium text-sm border transition-all ${
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg font-medium text-xs border transition-all cursor-pointer ${
                 copied
-                  ? 'bg-emerald-50 border-emerald-500 text-emerald-800'
-                  : 'bg-emerald-700 hover:bg-emerald-800 text-white border-transparent shadow-xs'
+                  ? 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold'
+                  : 'bg-emerald-700 hover:bg-emerald-800 text-white border-transparent shadow-2xs'
               }`}
             >
               {copied ? (
                 <>
                   <Check className="w-4 h-4 text-emerald-600" />
-                  <span>টেক্সট কপি করা হয়েছে!</span>
+                  <span>কপি করা হয়েছে!</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-4 h-4" />
-                  <span>হোয়াটসঅ্যাপ/ইমেইলে কপি করুন</span>
+                  <span>টেক্সট কপি করুন</span>
                 </>
               )}
             </button>
@@ -218,10 +233,10 @@ export const ShareModal: React.FC<Props> = ({
             {typeof navigator !== 'undefined' && 'share' in navigator && (
               <button
                 onClick={handleNativeShare}
-                className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-900 text-white font-medium text-sm rounded-lg shadow-xs transition-all"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-medium text-xs rounded-lg shadow-2xs transition-all cursor-pointer"
               >
                 <Share2 className="w-4 h-4 text-emerald-400" />
-                <span>সরাসরি শেয়ার অ্যাপে পাঠান</span>
+                <span>শেয়ার অ্যাপে পাঠান</span>
               </button>
             )}
           </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScheduleDocument } from '../types';
 import { GovernmentEmblem } from './GovernmentEmblem';
-import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet } from 'lucide-react';
+import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet, Mail } from 'lucide-react';
 import { formatBengaliDate } from '../utils/bengaliUtils';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 
@@ -15,6 +15,7 @@ interface Props {
   onOpenShareModal: () => void;
   onOpenNotificationModal: () => void;
   onOpenGoogleFormsModal: () => void;
+  onOpenGmailModal: () => void;
   isSaving?: boolean;
   saveStatus?: 'saved' | 'syncing' | 'error';
   lastSavedTime?: string | null;
@@ -30,6 +31,7 @@ export const HeaderNav: React.FC<Props> = ({
   onOpenShareModal,
   onOpenNotificationModal,
   onOpenGoogleFormsModal,
+  onOpenGmailModal,
   isSaving = false,
   saveStatus,
   lastSavedTime,
@@ -89,6 +91,15 @@ export const HeaderNav: React.FC<Props> = ({
           >
             <Plus className="w-3.5 h-3.5 text-emerald-400" />
             <span>নতুন সূচি</span>
+          </button>
+
+          <button
+            onClick={onOpenGmailModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white border border-red-600 text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
+            title="গুগল জি-মেইল দ্বারা সরাসরি ইমেইল নোটিশ পাঠান"
+          >
+            <Mail className="w-3.5 h-3.5 text-white" />
+            <span>জি-মেইল (Gmail)</span>
           </button>
 
           <button

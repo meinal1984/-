@@ -11,6 +11,7 @@ import { PrintPDFModal } from './components/PrintPDFModal';
 import { ShareModal } from './components/ShareModal';
 import { NotificationModal } from './components/NotificationModal';
 import { GoogleFormsModal } from './components/GoogleFormsModal';
+import { GmailModal } from './components/GmailModal';
 import { AutoSaveIndicator } from './components/AutoSaveIndicator';
 import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, Bell, FileSpreadsheet } from 'lucide-react';
 
@@ -34,6 +35,7 @@ export default function App() {
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState<boolean>(false);
   const [isGoogleFormsModalOpen, setIsGoogleFormsModalOpen] = useState<boolean>(false);
+  const [isGmailModalOpen, setIsGmailModalOpen] = useState<boolean>(false);
 
   // Search/Filter state
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -366,6 +368,7 @@ export default function App() {
         onOpenShareModal={() => setIsShareModalOpen(true)}
         onOpenNotificationModal={() => setIsNotificationModalOpen(true)}
         onOpenGoogleFormsModal={() => setIsGoogleFormsModalOpen(true)}
+        onOpenGmailModal={() => setIsGmailModalOpen(true)}
         isSaving={isSaving}
         saveStatus={saveStatus}
         lastSavedTime={lastSavedTime}
@@ -537,6 +540,7 @@ export default function App() {
         onClose={() => setIsShareModalOpen(false)}
         document={activeDoc}
         onSaveLetterhead={handleSaveLetterhead}
+        onOpenGmailModal={() => setIsGmailModalOpen(true)}
       />
 
       <NotificationModal
@@ -548,6 +552,12 @@ export default function App() {
       <GoogleFormsModal
         isOpen={isGoogleFormsModalOpen}
         onClose={() => setIsGoogleFormsModalOpen(false)}
+        document={activeDoc}
+      />
+
+      <GmailModal
+        isOpen={isGmailModalOpen}
+        onClose={() => setIsGmailModalOpen(false)}
         document={activeDoc}
       />
     </div>
