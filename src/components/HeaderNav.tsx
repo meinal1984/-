@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScheduleDocument } from '../types';
 import { GovernmentEmblem } from './GovernmentEmblem';
-import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet, Mail } from 'lucide-react';
+import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet, Mail, HardDrive } from 'lucide-react';
 import { formatBengaliDate } from '../utils/bengaliUtils';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 
@@ -16,6 +16,7 @@ interface Props {
   onOpenNotificationModal: () => void;
   onOpenGoogleFormsModal: () => void;
   onOpenGmailModal: () => void;
+  onOpenDriveModal?: () => void;
   isSaving?: boolean;
   saveStatus?: 'saved' | 'syncing' | 'error';
   lastSavedTime?: string | null;
@@ -32,6 +33,7 @@ export const HeaderNav: React.FC<Props> = ({
   onOpenNotificationModal,
   onOpenGoogleFormsModal,
   onOpenGmailModal,
+  onOpenDriveModal,
   isSaving = false,
   saveStatus,
   lastSavedTime,
@@ -101,6 +103,17 @@ export const HeaderNav: React.FC<Props> = ({
             <Mail className="w-3.5 h-3.5 text-white" />
             <span>জি-মেইল (Gmail)</span>
           </button>
+
+          {onOpenDriveModal && (
+            <button
+              onClick={onOpenDriveModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-emerald-100 border border-emerald-600 text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
+              title="গুগল ড্রাইভ ক্লাউড ব্যাকআপ ও ইম্পোর্ট"
+            >
+              <HardDrive className="w-3.5 h-3.5 text-emerald-300" />
+              <span>গুগল ড্রাইভ</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenGoogleFormsModal}

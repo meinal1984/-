@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScheduleDocument, LetterheadConfig } from '../types';
 import { generateShareableText } from '../utils/bengaliUtils';
-import { X, Share2, Copy, Check, Download, FileSpreadsheet, Edit3, RotateCcw, Award, Mail } from 'lucide-react';
+import { X, Share2, Copy, Check, Download, FileSpreadsheet, Edit3, RotateCcw, Award, Mail, HardDrive } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -9,6 +9,7 @@ interface Props {
   document: ScheduleDocument;
   onSaveLetterhead?: (config: LetterheadConfig) => void;
   onOpenGmailModal?: () => void;
+  onOpenDriveModal?: () => void;
 }
 
 export const ShareModal: React.FC<Props> = ({
@@ -17,6 +18,7 @@ export const ShareModal: React.FC<Props> = ({
   document,
   onSaveLetterhead,
   onOpenGmailModal,
+  onOpenDriveModal,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -195,7 +197,7 @@ export const ShareModal: React.FC<Props> = ({
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-4 font-sans">
           {/* Main Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {onOpenGmailModal && (
               <button
                 onClick={() => {
@@ -205,7 +207,20 @@ export const ShareModal: React.FC<Props> = ({
                 className="flex items-center justify-center gap-2 px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg shadow-sm transition-all cursor-pointer"
               >
                 <Mail className="w-4 h-4 text-white" />
-                <span>জি-মেইলে সরাসরি পাঠান</span>
+                <span>জি-মেইলে সরাসরি ইমেইল পাঠান</span>
+              </button>
+            )}
+
+            {onOpenDriveModal && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenDriveModal();
+                }}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs rounded-lg shadow-sm transition-all cursor-pointer"
+              >
+                <HardDrive className="w-4 h-4 text-emerald-300" />
+                <span>গুগল ড্রাইভে ক্লাউড সেভ করুন</span>
               </button>
             )}
 

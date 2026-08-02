@@ -126,6 +126,8 @@ export const GmailModal: React.FC<Props> = ({ isOpen, onClose, document: schedul
       const result = await signInWithGmail();
       if (result) {
         setCurrentUser(result.user);
+      } else {
+        setSendErrorMessage('সাইন-ইন উইন্ডোটি বন্ধ করা হয়েছে। কানেক্ট করতে পুনরায় চেষ্টা করুন।');
       }
     } catch (err: any) {
       console.error('Sign in failed:', err);

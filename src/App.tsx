@@ -12,6 +12,7 @@ import { ShareModal } from './components/ShareModal';
 import { NotificationModal } from './components/NotificationModal';
 import { GoogleFormsModal } from './components/GoogleFormsModal';
 import { GmailModal } from './components/GmailModal';
+import { DriveModal } from './components/DriveModal';
 import { AutoSaveIndicator } from './components/AutoSaveIndicator';
 import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, Bell, FileSpreadsheet } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export default function App() {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState<boolean>(false);
   const [isGoogleFormsModalOpen, setIsGoogleFormsModalOpen] = useState<boolean>(false);
   const [isGmailModalOpen, setIsGmailModalOpen] = useState<boolean>(false);
+  const [isDriveModalOpen, setIsDriveModalOpen] = useState<boolean>(false);
 
   // Search/Filter state
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -369,6 +371,7 @@ export default function App() {
         onOpenNotificationModal={() => setIsNotificationModalOpen(true)}
         onOpenGoogleFormsModal={() => setIsGoogleFormsModalOpen(true)}
         onOpenGmailModal={() => setIsGmailModalOpen(true)}
+        onOpenDriveModal={() => setIsDriveModalOpen(true)}
         isSaving={isSaving}
         saveStatus={saveStatus}
         lastSavedTime={lastSavedTime}
@@ -541,6 +544,7 @@ export default function App() {
         document={activeDoc}
         onSaveLetterhead={handleSaveLetterhead}
         onOpenGmailModal={() => setIsGmailModalOpen(true)}
+        onOpenDriveModal={() => setIsDriveModalOpen(true)}
       />
 
       <NotificationModal
@@ -559,6 +563,15 @@ export default function App() {
         isOpen={isGmailModalOpen}
         onClose={() => setIsGmailModalOpen(false)}
         document={activeDoc}
+      />
+
+      <DriveModal
+        isOpen={isDriveModalOpen}
+        onClose={() => setIsDriveModalOpen(false)}
+        document={activeDoc}
+        onImportDocument={(importedDoc) => {
+          updateAndSaveActiveDoc(importedDoc);
+        }}
       />
     </div>
   );

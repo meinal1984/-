@@ -59,6 +59,14 @@ export const signInWithGmail = async (): Promise<{ user: User; accessToken: stri
     cachedAccessToken = credential.accessToken;
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
+    if (
+      error?.code === 'auth/popup-closed-by-user' ||
+      error?.code === 'auth/cancelled-popup-request' ||
+      error?.message?.includes('popup-closed-by-user')
+    ) {
+      console.log('User closed Gmail sign-in popup.');
+      return null;
+    }
     console.error('Gmail Sign in error:', error);
     throw error;
   } finally {
