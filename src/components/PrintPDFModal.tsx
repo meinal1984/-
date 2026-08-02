@@ -217,7 +217,110 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
   };
 
   const handlePrint = () => {
-    window.print();
+    const element = window.document.getElementById('printable-notice-area');
+    if (!element) {
+      window.print();
+      return;
+    }
+
+    try {
+      const printIframe = document.createElement('iframe');
+      printIframe.style.position = 'fixed';
+      printIframe.style.right = '0';
+      printIframe.style.bottom = '0';
+      printIframe.style.width = '0px';
+      printIframe.style.height = '0px';
+      printIframe.style.border = '0px';
+      printIframe.title = 'Print Window';
+      document.body.appendChild(printIframe);
+
+      const iframeDoc = printIframe.contentWindow?.document;
+      if (!iframeDoc) {
+        window.print();
+        return;
+      }
+
+      const styleSheets = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+        .map(s => s.outerHTML)
+        .join('\n');
+
+      iframeDoc.open();
+      iframeDoc.write(`
+        <!DOCTYPE html>
+        <html lang="bn">
+          <head>
+            <meta charset="utf-8" />
+            <title>${letterhead?.docHeading || 'কর্মসূচি-বিজ্ঞপ্তি'}</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+            ${styleSheets}
+            <style>
+              @page {
+                size: ${pdfFormat} ${pdfOrientation};
+                margin: ${topMargin}mm ${rightMargin}mm ${bottomMargin}mm ${leftMargin}mm;
+              }
+              body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-family: 'Tiro Bangla', 'Noto Serif Bengali', 'Hind Siliguri', serif !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              .no-print {
+                display: none !important;
+              }
+              #printable-notice-area {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+              }
+              table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+              }
+              th, td {
+                border: 1px solid #000000 !important;
+              }
+              th {
+                background-color: #e0f2fe !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+            </style>
+          </head>
+          <body>
+            ${element.outerHTML}
+          </body>
+        </html>
+      `);
+      iframeDoc.close();
+
+      setTimeout(() => {
+        try {
+          printIframe.contentWindow?.focus();
+          printIframe.contentWindow?.print();
+        } catch (e) {
+          console.error('Iframe print error:', e);
+          window.print();
+        } finally {
+          setTimeout(() => {
+            if (document.body.contains(printIframe)) {
+              document.body.removeChild(printIframe);
+            }
+          }, 1000);
+        }
+      }, 300);
+    } catch (e) {
+      console.error('Print trigger error:', e);
+      window.print();
+    }
   };
 
   return (

@@ -1,42 +1,83 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScheduleItem } from '../types';
-import { Plus, Edit2, Trash2, ArrowUp, ArrowDown, Copy, Clock, MapPin, User, FileText, Calendar } from 'lucide-react';
+import { Plus, Edit2, Trash2, ArrowUp, ArrowDown, Copy, Clock, MapPin, User, FileText, Calendar, CheckSquare, Edit3 } from 'lucide-react';
+import { AutoSaveIndicator } from './AutoSaveIndicator';
 
 interface Props {
   items: ScheduleItem[];
   onAddItem: () => void;
   onEditItem: (item: ScheduleItem) => void;
+  onUpdateItem?: (updatedItem: ScheduleItem) => void;
   onDeleteItem: (id: string) => void;
   onDuplicateItem: (item: ScheduleItem) => void;
   onMoveItem: (index: number, direction: 'up' | 'down') => void;
   onToggleComplete?: (id: string) => void;
+  saveStatus?: 'saved' | 'syncing' | 'error';
+  lastSavedTime?: string | null;
 }
 
 export const ScheduleTable: React.FC<Props> = ({
   items,
   onAddItem,
   onEditItem,
+  onUpdateItem,
   onDeleteItem,
   onDuplicateItem,
   onMoveItem,
+  saveStatus = 'saved',
+  lastSavedTime,
 }) => {
+  const [isInlineEditMode, setIsInlineEditMode] = useState<boolean>(false);
+
+  const handleCellChange = (item: ScheduleItem, field: keyof ScheduleItem, value: string) => {
+    if (!onUpdateItem) return;
+    const updated = {
+      ...item,
+      [field]: value,
+    };
+    if (field === 'dateAndDay' || field === 'timeOnly') {
+      updated.dateTime = `${updated.dateAndDay || ''} ${updated.timeOnly || ''}`.trim();
+    }
+    onUpdateItem(updated);
+  };
+
   return (
     <div className="bg-white border border-slate-300 rounded-xl shadow-xs overflow-hidden">
       {/* Table Action Bar */}
       <div className="no-print p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-slate-900 text-sm">
-            কর্মসূচি তালিকা ({items.length} টি)
+        <div className="flex items-center gap-3">
+          <span className="font-semibold text-slate-900 text-sm flex items-center gap-2">
+            <span>কর্মসূচি তালিকা ({items.length} টি)</span>
           </span>
+
+          {/* Local Auto-Save Indicator */}
+          <AutoSaveIndicator status={saveStatus} lastSavedTime={lastSavedTime} compact />
         </div>
 
-        <button
-          onClick={onAddItem}
-          className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs sm:text-sm rounded-lg shadow-xs transition-all active:scale-98"
-        >
-          <Plus className="w-4 h-4" />
-          <span>নতুন কর্মসূচি যোগ করুন</span>
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {onUpdateItem && (
+            <button
+              onClick={() => setIsInlineEditMode(!isInlineEditMode)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                isInlineEditMode
+                  ? 'bg-amber-100 text-amber-900 border-amber-300 shadow-2xs'
+                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+              }`}
+              title="টেবিলে সরাসরি লিখে এডিট করুন"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{isInlineEditMode ? 'সরাসরি এডিট মোড (চালু)' : 'সরাসরি এডিট মোড'}</span>
+            </button>
+          )}
+
+          <button
+            onClick={onAddItem}
+            className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs sm:text-sm rounded-lg shadow-xs transition-all active:scale-98"
+          >
+            <Plus className="w-4 h-4" />
+            <span>নতুন কর্মসূচি যোগ করুন</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Grid Table - Matching Uploaded Image */}
@@ -103,35 +144,89 @@ export const ScheduleTable: React.FC<Props> = ({
                   }`}
                 >
                   {/* 1. Date & Day (তারিখ ও বার) */}
-                  <td className="py-3 px-2 text-center border-r border-slate-800 align-middle leading-tight font-bold text-black">
-                    {item.dateAndDay || item.dateTime || '—'}
+                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle leading-tight font-bold text-black">
+                    {isInlineEditMode ? (
+                      <input
+                        type="text"
+                        value={item.dateAndDay || item.dateTime || ''}
+                        onChange={(e) => handleCellChange(item, 'dateAndDay', e.target.value)}
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-bold text-black"
+                      />
+                    ) : (
+                      item.dateAndDay || item.dateTime || '—'
+                    )}
                   </td>
 
                   {/* 2. Time (সময়) */}
-                  <td className="py-3 px-2 text-center border-r border-slate-800 align-middle font-medium text-slate-900 leading-tight">
-                    {item.timeOnly || '—'}
+                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle font-medium text-slate-900 leading-tight">
+                    {isInlineEditMode ? (
+                      <input
+                        type="text"
+                        value={item.timeOnly || ''}
+                        onChange={(e) => handleCellChange(item, 'timeOnly', e.target.value)}
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-medium text-slate-900"
+                      />
+                    ) : (
+                      item.timeOnly || '—'
+                    )}
                   </td>
 
                   {/* 3. Venue (সভার স্থান) */}
-                  <td className="py-3 px-2 text-center border-r border-slate-800 align-middle text-slate-900 leading-snug">
-                    {item.venue || '—'}
+                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle text-slate-900 leading-snug">
+                    {isInlineEditMode ? (
+                      <input
+                        type="text"
+                        value={item.venue || ''}
+                        onChange={(e) => handleCellChange(item, 'venue', e.target.value)}
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-900"
+                      />
+                    ) : (
+                      item.venue || '—'
+                    )}
                   </td>
 
-                  {/* 4. Subject / Description (সভার বিষয় - Bold in original image) */}
-                  <td className="py-3 px-3 text-center border-r border-slate-800 align-middle font-bold text-slate-950 text-sm sm:text-base leading-snug">
-                    <div className={item.completed ? 'line-through text-slate-400 font-normal' : ''}>
-                      {item.description}
-                    </div>
+                  {/* 4. Subject / Description (সভার বিষয়) */}
+                  <td className="py-2.5 px-3 text-center border-r border-slate-800 align-middle font-bold text-slate-950 text-sm sm:text-base leading-snug">
+                    {isInlineEditMode ? (
+                      <textarea
+                        rows={2}
+                        value={item.description || ''}
+                        onChange={(e) => handleCellChange(item, 'description', e.target.value)}
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-bold text-slate-900 resize-y"
+                      />
+                    ) : (
+                      <div className={item.completed ? 'line-through text-slate-400 font-normal' : ''}>
+                        {item.description}
+                      </div>
+                    )}
                   </td>
 
                   {/* 5. Chairperson (সভাপতি) */}
-                  <td className="py-3 px-2 text-center border-r border-slate-800 align-middle text-slate-900">
-                    {item.chairperson || '—'}
+                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle text-slate-900">
+                    {isInlineEditMode ? (
+                      <input
+                        type="text"
+                        value={item.chairperson || ''}
+                        onChange={(e) => handleCellChange(item, 'chairperson', e.target.value)}
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-900"
+                      />
+                    ) : (
+                      item.chairperson || '—'
+                    )}
                   </td>
 
                   {/* 6. Remarks (মন্তব্য) */}
-                  <td className="py-3 px-2 text-center border-r border-slate-800 align-middle text-slate-800 text-xs">
-                    {item.remarks || '—'}
+                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle text-slate-800 text-xs">
+                    {isInlineEditMode ? (
+                      <input
+                        type="text"
+                        value={item.remarks || ''}
+                        onChange={(e) => handleCellChange(item, 'remarks', e.target.value)}
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-800"
+                      />
+                    ) : (
+                      item.remarks || '—'
+                    )}
                   </td>
 
                   {/* Action Buttons */}
@@ -159,7 +254,7 @@ export const ScheduleTable: React.FC<Props> = ({
                       <button
                         onClick={() => onEditItem(item)}
                         className="p-1 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
-                        title="সম্পাদন করুন"
+                        title="পপআপ মডালে বিস্তারিত সম্পাদন করুন"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>

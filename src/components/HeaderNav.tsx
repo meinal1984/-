@@ -1,8 +1,9 @@
 import React from 'react';
 import { ScheduleDocument } from '../types';
 import { GovernmentEmblem } from './GovernmentEmblem';
-import { Calendar, Plus, Printer, Share2, Edit3, Database, Bell, Clock, FileSpreadsheet } from 'lucide-react';
+import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet } from 'lucide-react';
 import { formatBengaliDate } from '../utils/bengaliUtils';
+import { AutoSaveIndicator } from './AutoSaveIndicator';
 
 interface Props {
   documents: ScheduleDocument[];
@@ -15,6 +16,8 @@ interface Props {
   onOpenNotificationModal: () => void;
   onOpenGoogleFormsModal: () => void;
   isSaving?: boolean;
+  saveStatus?: 'saved' | 'syncing' | 'error';
+  lastSavedTime?: string | null;
 }
 
 export const HeaderNav: React.FC<Props> = ({
@@ -28,7 +31,11 @@ export const HeaderNav: React.FC<Props> = ({
   onOpenNotificationModal,
   onOpenGoogleFormsModal,
   isSaving = false,
+  saveStatus,
+  lastSavedTime,
 }) => {
+  const currentStatus = saveStatus || (isSaving ? 'syncing' : 'saved');
+
   return (
     <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-md no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
@@ -127,17 +134,9 @@ export const HeaderNav: React.FC<Props> = ({
             <span>শেয়ার</span>
           </button>
 
-          {/* Database Sync Badge */}
-          <div className="flex items-center gap-1 text-[11px] text-slate-400 pl-2 border-l border-slate-800">
-            {isSaving ? (
-              <span className="text-amber-400 animate-pulse flex items-center gap-1">
-                <Clock className="w-3 h-3" /> ডাটাবেসে সেভ হচ্ছে...
-              </span>
-            ) : (
-              <span className="text-emerald-400 flex items-center gap-1">
-                <Database className="w-3 h-3" /> ডাটাবেসে সংরক্ষিত
-              </span>
-            )}
+          {/* Database Auto-Save Status Badge */}
+          <div className="pl-2 border-l border-slate-800 flex items-center">
+            <AutoSaveIndicator status={currentStatus} lastSavedTime={lastSavedTime} />
           </div>
         </div>
       </div>

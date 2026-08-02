@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScheduleDocument, ScheduleItem, LetterheadConfig } from './types';
 import { fetchSchedules, saveSchedule, deleteSchedule } from './utils/storage';
 import { formatBengaliDate, toBengaliNumerals, getCurrentBengaliMonthYear } from './utils/bengaliUtils';
@@ -11,6 +11,7 @@ import { PrintPDFModal } from './components/PrintPDFModal';
 import { ShareModal } from './components/ShareModal';
 import { NotificationModal } from './components/NotificationModal';
 import { GoogleFormsModal } from './components/GoogleFormsModal';
+import { AutoSaveIndicator } from './components/AutoSaveIndicator';
 import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, Bell, FileSpreadsheet } from 'lucide-react';
 
 export default function App() {
@@ -18,6 +19,11 @@ export default function App() {
   const [activeDocId, setActiveDocId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  // Auto-Save status state
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'syncing' | 'error'>('saved');
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Modals state
   const [isItemModalOpen, setIsItemModalOpen] = useState<boolean>(false);
@@ -31,6 +37,15 @@ export default function App() {
 
   // Search/Filter state
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Format current time into Bengali numerals
+  const getFormattedTime = () => {
+    const now = new Date();
+    const hrs = now.getHours().toString().padStart(2, '0');
+    const mins = now.getMinutes().toString().padStart(2, '0');
+    const secs = now.getSeconds().toString().padStart(2, '0');
+    return toBengaliNumerals(`${hrs}:${mins}:${secs}`);
+  };
 
   // Initial Load from API / Storage
   useEffect(() => {
@@ -48,6 +63,8 @@ export default function App() {
         await saveSchedule(initialDoc);
       }
       setIsLoading(false);
+      setSaveStatus('saved');
+      setLastSavedTime(getFormattedTime());
     }
     loadData();
   }, []);
@@ -119,14 +136,37 @@ export default function App() {
     };
   }
 
-  // Save current active document changes
-  const updateAndSaveActiveDoc = async (updatedDoc: ScheduleDocument) => {
+  // Save current active document changes with smooth debounced status tracking
+  const updateAndSaveActiveDoc = (updatedDoc: ScheduleDocument, immediate = false) => {
     setIsSaving(true);
+    setSaveStatus('syncing');
+
     setDocuments((prev) =>
       prev.map((doc) => (doc.id === updatedDoc.id ? updatedDoc : doc))
     );
-    await saveSchedule(updatedDoc);
-    setIsSaving(false);
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    const performSave = async () => {
+      try {
+        await saveSchedule(updatedDoc);
+        setSaveStatus('saved');
+        setLastSavedTime(getFormattedTime());
+      } catch (err) {
+        console.error('Save error:', err);
+        setSaveStatus('error');
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    if (immediate) {
+      performSave();
+    } else {
+      saveTimeoutRef.current = setTimeout(performSave, 350);
+    }
   };
 
   // Add or Edit Schedule Item
@@ -327,6 +367,8 @@ export default function App() {
         onOpenNotificationModal={() => setIsNotificationModalOpen(true)}
         onOpenGoogleFormsModal={() => setIsGoogleFormsModalOpen(true)}
         isSaving={isSaving}
+        saveStatus={saveStatus}
+        lastSavedTime={lastSavedTime}
       />
 
       {/* Main Content Area */}
@@ -334,18 +376,23 @@ export default function App() {
         {/* Document Title Bar & Quick Actions */}
         <div className="no-print bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-emerald-700" />
-              <input
-                type="text"
-                value={activeDoc?.title || ''}
-                onChange={(e) => {
-                  const updated = { ...activeDoc, title: e.target.value };
-                  updateAndSaveActiveDoc(updated);
-                }}
-                className="font-serif-bn font-bold text-lg sm:text-xl text-slate-900 bg-transparent border-b border-dashed border-slate-300 focus:border-emerald-700 focus:outline-hidden px-1"
-                placeholder="সূচির শিরোনাম লিখুন"
-              />
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-emerald-700" />
+                <input
+                  type="text"
+                  value={activeDoc?.title || ''}
+                  onChange={(e) => {
+                    const updated = { ...activeDoc, title: e.target.value };
+                    updateAndSaveActiveDoc(updated);
+                  }}
+                  className="font-serif-bn font-bold text-lg sm:text-xl text-slate-900 bg-transparent border-b border-dashed border-slate-300 focus:border-emerald-700 focus:outline-hidden px-1"
+                  placeholder="সূচির শিরোনাম লিখুন"
+                />
+              </div>
+
+              {/* Title Bar Auto-Save Indicator */}
+              <AutoSaveIndicator status={saveStatus} lastSavedTime={lastSavedTime} compact />
             </div>
             <p className="text-xs text-slate-500 font-medium pl-7">
               সর্বশেষ আপডেট: {new Date(activeDoc?.updatedAt || Date.now()).toLocaleTimeString('bn-BD')}
@@ -416,9 +463,12 @@ export default function App() {
               setItemToEdit(item);
               setIsItemModalOpen(true);
             }}
+            onUpdateItem={(updatedItem) => handleSaveItem(updatedItem)}
             onDeleteItem={handleDeleteItem}
             onDuplicateItem={handleDuplicateItem}
             onMoveItem={handleMoveItem}
+            saveStatus={saveStatus}
+            lastSavedTime={lastSavedTime}
           />
 
           {/* 3. Official Signatory & Custom Footer Section */}
