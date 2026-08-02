@@ -13,8 +13,9 @@ import { NotificationModal } from './components/NotificationModal';
 import { GoogleFormsModal } from './components/GoogleFormsModal';
 import { GmailModal } from './components/GmailModal';
 import { DriveModal } from './components/DriveModal';
+import { ArchiveModal } from './components/ArchiveModal';
 import { AutoSaveIndicator } from './components/AutoSaveIndicator';
-import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, Bell, FileSpreadsheet } from 'lucide-react';
+import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, Bell, FileSpreadsheet, Archive } from 'lucide-react';
 
 export default function App() {
   const [documents, setDocuments] = useState<ScheduleDocument[]>([]);
@@ -38,6 +39,7 @@ export default function App() {
   const [isGoogleFormsModalOpen, setIsGoogleFormsModalOpen] = useState<boolean>(false);
   const [isGmailModalOpen, setIsGmailModalOpen] = useState<boolean>(false);
   const [isDriveModalOpen, setIsDriveModalOpen] = useState<boolean>(false);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState<boolean>(false);
 
   // Search/Filter state
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -256,17 +258,6 @@ export default function App() {
     updateAndSaveActiveDoc(updatedDoc);
   };
 
-  // Save updated Letterhead config
-  const handleSaveLetterhead = (config: LetterheadConfig) => {
-    if (!activeDoc) return;
-    const updatedDoc = {
-      ...activeDoc,
-      letterhead: config,
-      updatedAt: new Date().toISOString(),
-    };
-    updateAndSaveActiveDoc(updatedDoc);
-  };
-
   // Create new Schedule Document
   const handleCreateNewDocument = async () => {
     const titlePrompt = prompt(
@@ -306,19 +297,130 @@ export default function App() {
     await deleteSchedule(docToDeleteId);
   };
 
-  // Search filtering
-  const filteredItems = activeDoc?.items
-    ? activeDoc.items.filter((item) => {
-        const query = searchQuery.toLowerCase();
-        return (
-          item.description.toLowerCase().includes(query) ||
-          item.venue.toLowerCase().includes(query) ||
-          item.chairperson.toLowerCase().includes(query) ||
-          item.dateTime.toLowerCase().includes(query) ||
-          item.remarks.toLowerCase().includes(query)
-        );
-      })
-    : [];
+  // Save updated Letterhead config
+  const handleSaveLetterhead = (config: LetterheadConfig) => {
+    if (!activeDoc) return;
+    const updatedDoc = {
+      ...activeDoc,
+      letterhead: config,
+      updatedAt: new Date().toISOString(),
+    };
+    updateAndSaveActiveDoc(updatedDoc);
+  };
+
+  // Toggle item completion status
+  const handleToggleComplete = (itemId: string) => {
+    if (!activeDoc) return;
+    const updatedItems = activeDoc.items.map((it) =>
+      it.id === itemId ? { ...it, completed: !it.completed } : it
+    );
+    updateAndSaveActiveDoc({
+      ...activeDoc,
+      items: updatedItems,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  // Archive single item
+  const handleArchiveItem = (itemId: string) => {
+    if (!activeDoc) return;
+    const updatedItems = activeDoc.items.map((it) =>
+      it.id === itemId
+        ? { ...it, archived: true, archivedAt: new Date().toISOString() }
+        : it
+    );
+    updateAndSaveActiveDoc({
+      ...activeDoc,
+      items: updatedItems,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  // Archive all completed items
+  const handleArchiveCompletedItems = () => {
+    if (!activeDoc) return;
+    const updatedItems = activeDoc.items.map((it) =>
+      !it.archived && it.completed
+        ? { ...it, archived: true, archivedAt: new Date().toISOString() }
+        : it
+    );
+    updateAndSaveActiveDoc({
+      ...activeDoc,
+      items: updatedItems,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  // Restore single item from archive
+  const handleRestoreItem = (itemId: string) => {
+    if (!activeDoc) return;
+    const updatedItems = activeDoc.items.map((it) =>
+      it.id === itemId ? { ...it, archived: false } : it
+    );
+    updateAndSaveActiveDoc({
+      ...activeDoc,
+      items: updatedItems,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  // Restore all archived items
+  const handleRestoreAllArchived = () => {
+    if (!activeDoc) return;
+    const updatedItems = activeDoc.items.map((it) => ({
+      ...it,
+      archived: false,
+    }));
+    updateAndSaveActiveDoc({
+      ...activeDoc,
+      items: updatedItems,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  // Permanently delete single archived item
+  const handleDeleteArchivedItem = (itemId: string) => {
+    if (!activeDoc) return;
+    const updatedItems = activeDoc.items.filter((it) => it.id !== itemId);
+    updateAndSaveActiveDoc({
+      ...activeDoc,
+      items: updatedItems,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  // Permanently clear entire archive
+  const handleClearArchive = () => {
+    if (!activeDoc) return;
+    const updatedItems = activeDoc.items.filter((it) => !it.archived);
+    updateAndSaveActiveDoc({
+      ...activeDoc,
+      items: updatedItems,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  // Active vs Archived item lists
+  const activeItems = activeDoc?.items ? activeDoc.items.filter((i) => !i.archived) : [];
+  const archivedItems = activeDoc?.items ? activeDoc.items.filter((i) => i.archived === true) : [];
+
+  // Filter active items by search query
+  const filteredActiveItems = activeItems.filter((item) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      (item.description || '').toLowerCase().includes(query) ||
+      (item.venue || '').toLowerCase().includes(query) ||
+      (item.chairperson || '').toLowerCase().includes(query) ||
+      (item.dateTime || '').toLowerCase().includes(query) ||
+      (item.remarks || '').toLowerCase().includes(query)
+    );
+  });
+
+  // Active Doc prepared for export/print/share modals (contains only active items)
+  const displayDoc: ScheduleDocument = {
+    ...activeDoc,
+    items: activeItems,
+  };
 
   if (isLoading) {
     return (
@@ -372,6 +474,8 @@ export default function App() {
         onOpenGoogleFormsModal={() => setIsGoogleFormsModalOpen(true)}
         onOpenGmailModal={() => setIsGmailModalOpen(true)}
         onOpenDriveModal={() => setIsDriveModalOpen(true)}
+        onOpenArchiveModal={() => setIsArchiveModalOpen(true)}
+        archivedCount={archivedItems.length}
         isSaving={isSaving}
         saveStatus={saveStatus}
         lastSavedTime={lastSavedTime}
@@ -415,10 +519,25 @@ export default function App() {
               className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs sm:text-sm text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 focus:bg-white"
             />
 
-            {/* Add New Item Button */}
+            {/* Quick Archive Drawer Button */}
+            <button
+              onClick={() => setIsArchiveModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-amber-300 border border-slate-700 font-medium text-xs sm:text-sm rounded-lg shadow-2xs transition-all active:scale-98 cursor-pointer"
+              title="আর্কাইভকৃত সূচিসমূহ দেখুন"
+            >
+              <Archive className="w-4 h-4 text-amber-400" />
+              <span>আর্কাইভ</span>
+              {archivedItems.length > 0 && (
+                <span className="px-1.5 py-0.2 bg-amber-500 text-slate-950 font-mono text-[10px] font-bold rounded-full">
+                  {toBengaliNumerals(archivedItems.length.toString())}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Button */}
             <button
               onClick={() => setIsNotificationModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-900 text-emerald-200 hover:bg-emerald-800 border border-emerald-700 font-medium text-xs sm:text-sm rounded-lg shadow-2xs transition-all active:scale-98"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-900 text-emerald-200 hover:bg-emerald-800 border border-emerald-700 font-medium text-xs sm:text-sm rounded-lg shadow-2xs transition-all active:scale-98 cursor-pointer"
             >
               <Bell className="w-4 h-4 text-emerald-400" />
               <span>অটো নোটিফিকেশন</span>
@@ -429,7 +548,7 @@ export default function App() {
                 setItemToEdit(null);
                 setIsItemModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs sm:text-sm rounded-lg shadow-2xs transition-all active:scale-98"
+              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs sm:text-sm rounded-lg shadow-2xs transition-all active:scale-98 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>কর্মসূচি যোগ</span>
@@ -438,7 +557,7 @@ export default function App() {
             {/* Delete Document Option */}
             <button
               onClick={handleDeleteDocument}
-              className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200"
+              className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200 cursor-pointer"
               title="এই কর্মসূচি ফাইলটি মুছে ফেলুন"
             >
               <Trash2 className="w-4 h-4" />
@@ -460,7 +579,7 @@ export default function App() {
 
           {/* 2. Schedule Data Table */}
           <ScheduleTable
-            items={filteredItems}
+            items={filteredActiveItems}
             onAddItem={() => {
               setItemToEdit(null);
               setIsItemModalOpen(true);
@@ -473,6 +592,11 @@ export default function App() {
             onDeleteItem={handleDeleteItem}
             onDuplicateItem={handleDuplicateItem}
             onMoveItem={handleMoveItem}
+            onToggleComplete={handleToggleComplete}
+            onArchiveItem={handleArchiveItem}
+            onArchiveCompletedItems={handleArchiveCompletedItems}
+            onOpenArchiveModal={() => setIsArchiveModalOpen(true)}
+            archivedCount={archivedItems.length}
             saveStatus={saveStatus}
             lastSavedTime={lastSavedTime}
           />
@@ -535,13 +659,13 @@ export default function App() {
       <PrintPDFModal
         isOpen={isPrintModalOpen}
         onClose={() => setIsPrintModalOpen(false)}
-        document={activeDoc}
+        document={displayDoc}
       />
 
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        document={activeDoc}
+        document={displayDoc}
         onSaveLetterhead={handleSaveLetterhead}
         onOpenGmailModal={() => setIsGmailModalOpen(true)}
         onOpenDriveModal={() => setIsDriveModalOpen(true)}
@@ -550,28 +674,38 @@ export default function App() {
       <NotificationModal
         isOpen={isNotificationModalOpen}
         onClose={() => setIsNotificationModalOpen(false)}
-        document={activeDoc}
+        document={displayDoc}
       />
 
       <GoogleFormsModal
         isOpen={isGoogleFormsModalOpen}
         onClose={() => setIsGoogleFormsModalOpen(false)}
-        document={activeDoc}
+        document={displayDoc}
       />
 
       <GmailModal
         isOpen={isGmailModalOpen}
         onClose={() => setIsGmailModalOpen(false)}
-        document={activeDoc}
+        document={displayDoc}
       />
 
       <DriveModal
         isOpen={isDriveModalOpen}
         onClose={() => setIsDriveModalOpen(false)}
-        document={activeDoc}
+        document={displayDoc}
         onImportDocument={(importedDoc) => {
           updateAndSaveActiveDoc(importedDoc);
         }}
+      />
+
+      <ArchiveModal
+        isOpen={isArchiveModalOpen}
+        onClose={() => setIsArchiveModalOpen(false)}
+        archivedItems={archivedItems}
+        onRestoreItem={handleRestoreItem}
+        onRestoreAll={handleRestoreAllArchived}
+        onDeleteArchivedItem={handleDeleteArchivedItem}
+        onClearArchive={handleClearArchive}
       />
     </div>
   );

@@ -1,8 +1,8 @@
 import React from 'react';
 import { ScheduleDocument } from '../types';
 import { GovernmentEmblem } from './GovernmentEmblem';
-import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet, Mail, HardDrive } from 'lucide-react';
-import { formatBengaliDate } from '../utils/bengaliUtils';
+import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet, Mail, HardDrive, Archive } from 'lucide-react';
+import { formatBengaliDate, toBengaliNumerals } from '../utils/bengaliUtils';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 
 interface Props {
@@ -17,6 +17,8 @@ interface Props {
   onOpenGoogleFormsModal: () => void;
   onOpenGmailModal: () => void;
   onOpenDriveModal?: () => void;
+  onOpenArchiveModal?: () => void;
+  archivedCount?: number;
   isSaving?: boolean;
   saveStatus?: 'saved' | 'syncing' | 'error';
   lastSavedTime?: string | null;
@@ -34,6 +36,8 @@ export const HeaderNav: React.FC<Props> = ({
   onOpenGoogleFormsModal,
   onOpenGmailModal,
   onOpenDriveModal,
+  onOpenArchiveModal,
+  archivedCount = 0,
   isSaving = false,
   saveStatus,
   lastSavedTime,
@@ -41,7 +45,7 @@ export const HeaderNav: React.FC<Props> = ({
   const currentStatus = saveStatus || (isSaving ? 'syncing' : 'saved');
 
   return (
-    <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-md no-print">
+    <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-md no-print font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Brand & App Title */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
@@ -89,11 +93,27 @@ export const HeaderNav: React.FC<Props> = ({
 
           <button
             onClick={onNewDocument}
-            className="hidden md:flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium rounded-lg transition-colors"
+            className="hidden md:flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium rounded-lg transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5 text-emerald-400" />
             <span>নতুন সূচি</span>
           </button>
+
+          {onOpenArchiveModal && (
+            <button
+              onClick={onOpenArchiveModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-900/60 hover:bg-amber-800/80 text-amber-200 border border-amber-700/70 text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer relative"
+              title="আর্কাইভ সংরক্ষিত পুরনো কর্মসূচিগুলো দেখুন"
+            >
+              <Archive className="w-3.5 h-3.5 text-amber-400" />
+              <span>আর্কাইভ</span>
+              {archivedCount > 0 && (
+                <span className="px-1.5 py-0.2 bg-amber-500 text-slate-950 font-mono text-[10px] font-bold rounded-full">
+                  {toBengaliNumerals(archivedCount.toString())}
+                </span>
+              )}
+            </button>
+          )}
 
           <button
             onClick={onOpenGmailModal}
@@ -101,7 +121,7 @@ export const HeaderNav: React.FC<Props> = ({
             title="গুগল জি-মেইল দ্বারা সরাসরি ইমেইল নোটিশ পাঠান"
           >
             <Mail className="w-3.5 h-3.5 text-white" />
-            <span>জি-মেইল (Gmail)</span>
+            <span>জি-মেইল</span>
           </button>
 
           {onOpenDriveModal && (
@@ -126,7 +146,7 @@ export const HeaderNav: React.FC<Props> = ({
 
           <button
             onClick={onOpenLetterheadEditor}
-            className="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium rounded-lg transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium rounded-lg transition-colors cursor-pointer"
           >
             <Edit3 className="w-3.5 h-3.5 text-blue-400" />
             <span>লেটারহেড</span>
@@ -134,7 +154,7 @@ export const HeaderNav: React.FC<Props> = ({
 
           <button
             onClick={onOpenPrintModal}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-lg shadow-xs transition-all cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>পিডিএফ প্রিন্ট</span>
@@ -142,17 +162,17 @@ export const HeaderNav: React.FC<Props> = ({
 
           <button
             onClick={onOpenNotificationModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-900/90 hover:bg-emerald-800 text-emerald-200 border border-emerald-700 text-xs font-semibold rounded-lg shadow-2xs transition-all relative group"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-900/90 hover:bg-emerald-800 text-emerald-200 border border-emerald-700 text-xs font-semibold rounded-lg shadow-2xs transition-all relative group cursor-pointer"
             title="ইমেইল ও হোয়াটসঅ্যাপ অটো নোটিফিকেশন"
           >
             <Bell className="w-3.5 h-3.5 text-emerald-400 animate-bounce" />
-            <span>অটো নোটিফিকেশন</span>
+            <span>নোটিফিকেশন</span>
             <span className="w-2 h-2 rounded-full bg-emerald-400 absolute -top-0.5 -right-0.5 ring-2 ring-slate-900"></span>
           </button>
 
           <button
             onClick={onOpenShareModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium rounded-lg transition-colors cursor-pointer"
           >
             <Share2 className="w-3.5 h-3.5" />
             <span>শেয়ার</span>
@@ -167,3 +187,4 @@ export const HeaderNav: React.FC<Props> = ({
     </header>
   );
 };
+

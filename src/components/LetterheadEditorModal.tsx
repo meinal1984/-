@@ -423,14 +423,15 @@ export const LetterheadEditorModal: React.FC<Props> = ({
                   <label className="text-xs font-semibold text-slate-800">
                     ১. বামের লোগো / জাতীয় প্রতীক (Left Logo)
                   </label>
-                  <label className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={config.showEmblem !== false}
                       onChange={(e) => handleChange('showEmblem', e.target.checked)}
-                      className="rounded text-emerald-600 focus:ring-emerald-500"
+                      className="sr-only peer"
                     />
-                    <span>প্রদর্শন করুন</span>
+                    <div className="w-8 h-4.5 bg-slate-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span className="ml-2 text-xs font-medium text-slate-700">প্রদর্শন করুন</span>
                   </label>
                 </div>
 
@@ -495,14 +496,15 @@ export const LetterheadEditorModal: React.FC<Props> = ({
                   <label className="text-xs font-semibold text-slate-800">
                     ২. ডান পাশের লোগো / দপ্তর সিল (Right Logo)
                   </label>
-                  <label className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={config.showRightLogo !== false}
                       onChange={(e) => handleChange('showRightLogo', e.target.checked)}
-                      className="rounded text-emerald-600 focus:ring-emerald-500"
+                      className="sr-only peer"
                     />
-                    <span>প্রদর্শন করুন</span>
+                    <div className="w-8 h-4.5 bg-slate-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span className="ml-2 text-xs font-medium text-slate-700">প্রদর্শন করুন</span>
                   </label>
                 </div>
 
@@ -571,14 +573,15 @@ export const LetterheadEditorModal: React.FC<Props> = ({
                 <FileText className="w-4 h-4 text-emerald-700" />
                 <span>ফুটার ও স্বাক্ষরকারীর তথ্য সম্পাদনা (Custom Footer & Signatory)</span>
               </h4>
-              <label className="flex items-center gap-1.5 text-xs text-slate-600 font-medium cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={config.showSignatory !== false}
                   onChange={(e) => handleChange('showSignatory', e.target.checked)}
-                  className="rounded text-emerald-600 focus:ring-emerald-500"
+                  className="sr-only peer"
                 />
-                <span>স্বাক্ষর অংশ প্রদর্শন করুন</span>
+                <div className="w-9 h-5 bg-slate-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                <span className="ml-2 text-xs font-semibold text-slate-700">স্বাক্ষর অংশ প্রদর্শন করুন</span>
               </label>
             </div>
 

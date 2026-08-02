@@ -9,6 +9,8 @@ export interface ScheduleItem {
   chairperson: string;    // সভাপতি (e.g. "সচিব")
   remarks: string;        // মন্তব্য
   completed?: boolean;
+  archived?: boolean;     // আর্কাইভ স্ট্যাটাস
+  archivedAt?: string;    // আর্কাইভে প্রেরণের সময়কাল
 }
 
 export interface PrintMargins {

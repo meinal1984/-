@@ -1,7 +1,24 @@
 import React, { useState } from 'react';
 import { ScheduleItem } from '../types';
-import { Plus, Edit2, Trash2, ArrowUp, ArrowDown, Copy, Clock, MapPin, User, FileText, Calendar, CheckSquare, Edit3 } from 'lucide-react';
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  Copy,
+  Clock,
+  MapPin,
+  User,
+  FileText,
+  Calendar,
+  CheckSquare,
+  Square,
+  Edit3,
+  Archive,
+} from 'lucide-react';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
+import { toBengaliNumerals } from '../utils/bengaliUtils';
 
 interface Props {
   items: ScheduleItem[];
@@ -12,6 +29,10 @@ interface Props {
   onDuplicateItem: (item: ScheduleItem) => void;
   onMoveItem: (index: number, direction: 'up' | 'down') => void;
   onToggleComplete?: (id: string) => void;
+  onArchiveItem?: (id: string) => void;
+  onArchiveCompletedItems?: () => void;
+  onOpenArchiveModal?: () => void;
+  archivedCount?: number;
   saveStatus?: 'saved' | 'syncing' | 'error';
   lastSavedTime?: string | null;
 }
@@ -24,10 +45,17 @@ export const ScheduleTable: React.FC<Props> = ({
   onDeleteItem,
   onDuplicateItem,
   onMoveItem,
+  onToggleComplete,
+  onArchiveItem,
+  onArchiveCompletedItems,
+  onOpenArchiveModal,
+  archivedCount = 0,
   saveStatus = 'saved',
   lastSavedTime,
 }) => {
   const [isInlineEditMode, setIsInlineEditMode] = useState<boolean>(false);
+
+  const completedItemsCount = items.filter((i) => i.completed).length;
 
   const handleCellChange = (item: ScheduleItem, field: keyof ScheduleItem, value: string) => {
     if (!onUpdateItem) return;
@@ -42,12 +70,12 @@ export const ScheduleTable: React.FC<Props> = ({
   };
 
   return (
-    <div className="bg-white border border-slate-300 rounded-xl shadow-xs overflow-hidden">
+    <div className="bg-white border border-slate-300 rounded-xl shadow-xs overflow-hidden font-sans">
       {/* Table Action Bar */}
       <div className="no-print p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="font-semibold text-slate-900 text-sm flex items-center gap-2">
-            <span>কর্মসূচি তালিকা ({items.length} টি)</span>
+            <span>কর্মসূচি তালিকা ({toBengaliNumerals(items.length.toString())} টি)</span>
           </span>
 
           {/* Local Auto-Save Indicator */}
@@ -55,10 +83,41 @@ export const ScheduleTable: React.FC<Props> = ({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Quick Archive Completed Button */}
+          {completedItemsCount > 0 && onArchiveCompletedItems && (
+            <button
+              onClick={onArchiveCompletedItems}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
+              title="সম্পন্ন চিহ্নিত কর্মসূচিগুলো আর্কাইভে পাঠান"
+            >
+              <Archive className="w-3.5 h-3.5 text-amber-700" />
+              <span>
+                সম্পন্নগুলো আর্কাইভে পাঠান ({toBengaliNumerals(completedItemsCount.toString())})
+              </span>
+            </button>
+          )}
+
+          {/* Open Archive Modal Button */}
+          {onOpenArchiveModal && (
+            <button
+              onClick={onOpenArchiveModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
+              title="আর্কাইভকৃত পুরনো সূচিসমূহ দেখুন"
+            >
+              <Archive className="w-3.5 h-3.5 text-amber-400" />
+              <span>আর্কাইভ</span>
+              {archivedCount > 0 && (
+                <span className="px-1.5 py-0.2 bg-amber-500 text-slate-950 font-mono text-[10px] font-bold rounded-full">
+                  {toBengaliNumerals(archivedCount.toString())}
+                </span>
+              )}
+            </button>
+          )}
+
           {onUpdateItem && (
             <button
               onClick={() => setIsInlineEditMode(!isInlineEditMode)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                 isInlineEditMode
                   ? 'bg-amber-100 text-amber-900 border-amber-300 shadow-2xs'
                   : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
@@ -66,13 +125,13 @@ export const ScheduleTable: React.FC<Props> = ({
               title="টেবিলে সরাসরি লিখে এডিট করুন"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              <span>{isInlineEditMode ? 'সরাসরি এডিট মোড (চালু)' : 'সরাসরি এডিট মোড'}</span>
+              <span>{isInlineEditMode ? 'সরাসরি এডিট (চালু)' : 'সরাসরি এডিট'}</span>
             </button>
           )}
 
           <button
             onClick={onAddItem}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs sm:text-sm rounded-lg shadow-xs transition-all active:scale-98"
+            className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs sm:text-sm rounded-lg shadow-xs transition-all active:scale-98 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>নতুন কর্মসূচি যোগ করুন</span>
@@ -84,17 +143,31 @@ export const ScheduleTable: React.FC<Props> = ({
       {items.length === 0 ? (
         <div className="py-12 px-4 text-center">
           <Clock className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-slate-700 font-medium text-base">কোন কর্মসূচি অন্তর্ভুক্ত করা হয়নি</h3>
+          <h3 className="text-slate-700 font-medium text-base font-serif-bn">
+            কোনো সক্রিয় কর্মসূচি নেই
+          </h3>
           <p className="text-slate-500 text-xs mt-1 mb-4">
-            তালিকা খালি রয়েছে। নতুন কর্মসূচি যোগ করার জন্য নিচের বাটনে ক্লিক করুন।
+            বর্তমান তালিকা খালি রয়েছে। নতুন কর্মসূচি যোগ করুন অথবা প্রয়োজনে আর্কাইভ থেকে তথ্য পুনরুদ্ধার করুন।
           </p>
-          <button
-            onClick={onAddItem}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 text-white text-xs font-medium rounded-lg shadow-xs hover:bg-emerald-800"
-          >
-            <Plus className="w-4 h-4" />
-            <span>প্রথম কর্মসূচি যোগ করুন</span>
-          </button>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={onAddItem}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 text-white text-xs font-medium rounded-lg shadow-xs hover:bg-emerald-800 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>প্রথম কর্মসূচি যোগ করুন</span>
+            </button>
+
+            {archivedCount > 0 && onOpenArchiveModal && (
+              <button
+                onClick={onOpenArchiveModal}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-amber-300 text-xs font-medium rounded-lg shadow-xs hover:bg-slate-900 cursor-pointer"
+              >
+                <Archive className="w-4 h-4 text-amber-400" />
+                <span>আর্কাইভ থেকে দেখুন ({toBengaliNumerals(archivedCount.toString())})</span>
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="overflow-x-auto p-2 sm:p-4 bg-slate-100/50">
@@ -132,7 +205,7 @@ export const ScheduleTable: React.FC<Props> = ({
                   </div>
                 </th>
                 <th className="py-2.5 px-2 w-28 sm:w-32 border-r border-slate-800">মন্তব্য</th>
-                <th className="py-2.5 px-2 w-24 text-center no-print border-l border-slate-800">অ্যাকশন</th>
+                <th className="py-2.5 px-2 w-28 text-center no-print border-l border-slate-800">অ্যাকশন</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800 text-xs sm:text-sm text-slate-950 font-medium">
@@ -140,7 +213,7 @@ export const ScheduleTable: React.FC<Props> = ({
                 <tr
                   key={item.id}
                   className={`hover:bg-slate-50 transition-colors ${
-                    item.completed ? 'bg-slate-100/70 text-slate-500' : ''
+                    item.completed ? 'bg-emerald-50/40 text-slate-600' : ''
                   }`}
                 >
                   {/* 1. Date & Day (তারিখ ও বার) */}
@@ -150,7 +223,7 @@ export const ScheduleTable: React.FC<Props> = ({
                         type="text"
                         value={item.dateAndDay || item.dateTime || ''}
                         onChange={(e) => handleCellChange(item, 'dateAndDay', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-bold text-black"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-bold text-black font-serif-bn"
                       />
                     ) : (
                       item.dateAndDay || item.dateTime || '—'
@@ -164,7 +237,7 @@ export const ScheduleTable: React.FC<Props> = ({
                         type="text"
                         value={item.timeOnly || ''}
                         onChange={(e) => handleCellChange(item, 'timeOnly', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-medium text-slate-900"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-medium text-slate-900 font-serif-bn"
                       />
                     ) : (
                       item.timeOnly || '—'
@@ -178,7 +251,7 @@ export const ScheduleTable: React.FC<Props> = ({
                         type="text"
                         value={item.venue || ''}
                         onChange={(e) => handleCellChange(item, 'venue', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-900"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-900 font-serif-bn"
                       />
                     ) : (
                       item.venue || '—'
@@ -192,7 +265,7 @@ export const ScheduleTable: React.FC<Props> = ({
                         rows={2}
                         value={item.description || ''}
                         onChange={(e) => handleCellChange(item, 'description', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-bold text-slate-900 resize-y"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-bold text-slate-900 resize-y font-serif-bn"
                       />
                     ) : (
                       <div className={item.completed ? 'line-through text-slate-400 font-normal' : ''}>
@@ -208,7 +281,7 @@ export const ScheduleTable: React.FC<Props> = ({
                         type="text"
                         value={item.chairperson || ''}
                         onChange={(e) => handleCellChange(item, 'chairperson', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-900"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-900 font-serif-bn"
                       />
                     ) : (
                       item.chairperson || '—'
@@ -222,7 +295,7 @@ export const ScheduleTable: React.FC<Props> = ({
                         type="text"
                         value={item.remarks || ''}
                         onChange={(e) => handleCellChange(item, 'remarks', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-800"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-800 font-serif-bn"
                       />
                     ) : (
                       item.remarks || '—'
@@ -230,13 +303,32 @@ export const ScheduleTable: React.FC<Props> = ({
                   </td>
 
                   {/* Action Buttons */}
-                  <td className="py-2 px-2 text-center align-middle no-print border-l border-slate-800 bg-slate-50/50">
+                  <td className="py-2 px-1.5 text-center align-middle no-print border-l border-slate-800 bg-slate-50/50">
                     <div className="flex items-center justify-center gap-0.5">
+                      {/* Mark Completed Toggle */}
+                      {onToggleComplete && (
+                        <button
+                          onClick={() => onToggleComplete(item.id)}
+                          className={`p-1 rounded-md transition-colors ${
+                            item.completed
+                              ? 'text-emerald-700 bg-emerald-100 hover:bg-emerald-200'
+                              : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
+                          }`}
+                          title={item.completed ? 'সম্পন্ন চিহ্নিতকরণ বাতিল করুন' : 'সম্পন্ন হিসেবে চিহ্নিত করুন'}
+                        >
+                          {item.completed ? (
+                            <CheckSquare className="w-3.5 h-3.5" />
+                          ) : (
+                            <Square className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      )}
+
                       {/* Move Up/Down */}
                       <button
                         onClick={() => onMoveItem(index, 'up')}
                         disabled={index === 0}
-                        className="p-1 text-slate-500 hover:text-slate-900 disabled:opacity-20 transition-colors"
+                        className="p-1 text-slate-500 hover:text-slate-900 disabled:opacity-20 transition-colors cursor-pointer"
                         title="উপরে নিয়ে যান"
                       >
                         <ArrowUp className="w-3.5 h-3.5" />
@@ -244,7 +336,7 @@ export const ScheduleTable: React.FC<Props> = ({
                       <button
                         onClick={() => onMoveItem(index, 'down')}
                         disabled={index === items.length - 1}
-                        className="p-1 text-slate-500 hover:text-slate-900 disabled:opacity-20 transition-colors"
+                        className="p-1 text-slate-500 hover:text-slate-900 disabled:opacity-20 transition-colors cursor-pointer"
                         title="নিচে নিয়ে যান"
                       >
                         <ArrowDown className="w-3.5 h-3.5" />
@@ -253,7 +345,7 @@ export const ScheduleTable: React.FC<Props> = ({
                       {/* Edit */}
                       <button
                         onClick={() => onEditItem(item)}
-                        className="p-1 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+                        className="p-1 text-blue-600 hover:bg-blue-100 rounded-md transition-colors cursor-pointer"
                         title="পপআপ মডালে বিস্তারিত সম্পাদন করুন"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -262,16 +354,27 @@ export const ScheduleTable: React.FC<Props> = ({
                       {/* Duplicate */}
                       <button
                         onClick={() => onDuplicateItem(item)}
-                        className="p-1 text-emerald-600 hover:bg-emerald-100 rounded-md transition-colors"
+                        className="p-1 text-emerald-600 hover:bg-emerald-100 rounded-md transition-colors cursor-pointer"
                         title="কপি করুন"
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
 
+                      {/* Archive Button */}
+                      {onArchiveItem && (
+                        <button
+                          onClick={() => onArchiveItem(item.id)}
+                          className="p-1 text-amber-700 hover:bg-amber-100 rounded-md transition-colors cursor-pointer"
+                          title="এই কর্মসূচিটি আর্কাইভে সরান"
+                        >
+                          <Archive className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+
                       {/* Delete */}
                       <button
                         onClick={() => onDeleteItem(item.id)}
-                        className="p-1 text-rose-600 hover:bg-rose-100 rounded-md transition-colors"
+                        className="p-1 text-rose-600 hover:bg-rose-100 rounded-md transition-colors cursor-pointer"
                         title="মুছে ফেলুন"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -287,3 +390,4 @@ export const ScheduleTable: React.FC<Props> = ({
     </div>
   );
 };
+
