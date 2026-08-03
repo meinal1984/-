@@ -427,6 +427,12 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
                     {letterhead?.officeName || 'বাংলাদেশ ফিল্ম আর্কাইভ, তথ্য ও সম্প্রচার মন্ত্রণালয়'}
                   </h3>
 
+                  {letterhead?.branchName && (
+                    <h4 className="text-[10.5px] sm:text-[11.5px] font-semibold text-slate-800">
+                      {letterhead.branchName}
+                    </h4>
+                  )}
+
                   {letterhead?.address && (
                     <p className="text-[10px] sm:text-[11px] text-slate-800 whitespace-nowrap">
                       {letterhead.address}

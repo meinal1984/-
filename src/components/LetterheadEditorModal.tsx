@@ -16,6 +16,21 @@ const NOTICE_TITLE_PRESETS = [
   'জরুরি বিজ্ঞপ্তি',
 ];
 
+const BRANCH_PRESETS = [
+  'প্রশাসন শাখা',
+  'সংস্থাপন শাখা',
+  'সাধারণ শাখা',
+  'পরিকল্পনা ও উন্নয়ন শাখা',
+  'গবেষণা ও আর্কাইভ শাখা',
+  'অর্থ ও হিসাব শাখা',
+  'প্রকল্প বাস্তবায়ন শাখা',
+  'আইসিটি শাখা',
+  'প্রযুক্তি ও যান্ত্রিক শাখা',
+  'সংগ্রহ ও সংরক্ষণ শাখা',
+  'প্রকাশনা ও গণসংযোগ শাখা',
+  'আইন শাখা',
+];
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -263,6 +278,55 @@ export const LetterheadEditorModal: React.FC<Props> = ({
                   placeholder="যেমন: এফ-০৫, আগারগাঁও প্রশাসনিক এলাকা, ঢাকা"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 focus:bg-white"
                 />
+              </div>
+            </div>
+
+            {/* Branch / Section Field & Quick Presets */}
+            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-slate-800 font-sans flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block"></span>
+                  <span>শাখা / বিভাগ (Branch / Section)</span>
+                </label>
+                {config.branchName && (
+                  <button
+                    type="button"
+                    onClick={() => handleChange('branchName', '')}
+                    className="text-[11px] text-red-600 hover:text-red-700 hover:underline font-sans cursor-pointer"
+                  >
+                    শাখা মুছে ফেলুন
+                  </button>
+                )}
+              </div>
+              <input
+                type="text"
+                value={config.branchName || ''}
+                onChange={(e) => handleChange('branchName', e.target.value)}
+                placeholder="যেমন: প্রশাসন শাখা / সাধারণ শাখা / পরিকল্পনা শাখা"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-600"
+              />
+
+              {/* Branch Quick Presets */}
+              <div className="pt-1">
+                <div className="text-[11px] font-semibold text-slate-600 mb-1.5 font-sans">
+                  শাখার প্রিসেটসমূহ (ক্লিক করে নির্বাচন করুন):
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {BRANCH_PRESETS.map((bPreset) => (
+                    <button
+                      key={bPreset}
+                      type="button"
+                      onClick={() => handleChange('branchName', bPreset)}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all cursor-pointer ${
+                        config.branchName === bPreset
+                          ? 'bg-emerald-700 text-white border-emerald-700 font-bold shadow-2xs'
+                          : 'bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 border-slate-300 hover:border-emerald-300'
+                      }`}
+                    >
+                      {bPreset}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
