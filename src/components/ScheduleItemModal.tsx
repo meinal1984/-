@@ -27,14 +27,37 @@ const TIME_PRESETS = [
 
 const DESCRIPTION_PRESETS = [
   'প্রকল্প স্টিয়ারিং কমিটির (PSC) সভা',
+  'প্রকল্প বাস্তবায়ন কমিটির (PIC) সভা',
+  'এডিপি/আরএডিপিভুক্ত প্রকল্প সমূহের বাস্তবায়ন অগ্রগতি পর্যালোচনা সভা',
+  'মাসিক সমন্বয় সভা',
+  'দরপত্র মূল্যায়ন কমিটির (TEC) সভা',
   'আইন-শৃঙ্খলা সংক্রান্ত জেলা কমিটির মাসিক সভা',
   'বার্ষিক কর্মসম্পাদন চুক্তি (APA) বিষয়ক সভা',
-  'প্রকল্প বাস্তবায়নের অগ্রগতি পর্যালোচনা সভা',
   'জাতীয় দিবস উদ্‌যাপন সংক্রান্ত প্রস্তুতিমূলক সভা',
   'বিভাগীয় কর্মকর্তা ও দপ্তর প্রধানদের সমন্বয় সভা',
   'ডিজিটাল উদ্ভাবনী মেলার আয়োজনের প্রস্তুতি সভা',
   'সাধারণ জনগণের গণশুনানি ও স্মারকলিপি গ্রহণ',
   'বাজেট ও অর্থ কমিটির সমন্বয় বৈঠক',
+];
+
+const VENUE_PRESETS = [
+  'সম্মেলন কক্ষ (২য় তলা)',
+  'মন্ত্রণালয়ের সভাকক্ষ',
+  'প্রকল্প পরিচালকের কক্ষ',
+  'জেলা প্রশাসকের সম্মেলন কক্ষ',
+  'অনলাইন (জুম প্ল্যাটফর্ম)',
+  'উপজেলা পরিষদ মিলনায়তন',
+  'অফিস কক্ষ',
+];
+
+const CHAIRPERSON_PRESETS = [
+  'সচিব মহোদয়',
+  'প্রকল্প পরিচালক',
+  'জেলা প্রশাসক ও জেলা ম্যাজিস্ট্রেট',
+  'মহাপরিচালক (অতিরিক্ত সচিব)',
+  'অতিরিক্ত জেলা প্রশাসক (সার্বিক)',
+  'উপজেলা নির্বাহী অফিসার (ইউএনও)',
+  'উপ-প্রকল্প পরিচালক',
 ];
 
 export const ScheduleItemModal: React.FC<Props> = ({
@@ -333,9 +356,9 @@ export const ScheduleItemModal: React.FC<Props> = ({
           </div>
 
           {/* Venue & Chairperson Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1 font-sans">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1 font-sans">
                 <MapPin className="w-3.5 h-3.5 text-slate-500" />
                 <span>সভার স্থান</span>
               </label>
@@ -346,10 +369,31 @@ export const ScheduleItemModal: React.FC<Props> = ({
                 placeholder="যেমন: সভাকক্ষ, তথ্য ও সম্প্রচার মন্ত্রণালয়"
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 focus:bg-white font-serif-bn"
               />
+              <div className="pt-0.5">
+                <span className="text-[11px] font-semibold text-slate-500 block mb-1 font-sans">
+                  প্রিসেট স্থান:
+                </span>
+                <div className="flex flex-wrap gap-1 font-serif-bn">
+                  {VENUE_PRESETS.map((vPreset) => (
+                    <button
+                      key={vPreset}
+                      type="button"
+                      onClick={() => setVenue(vPreset)}
+                      className={`px-2 py-0.5 text-xs font-medium rounded-md border transition-all cursor-pointer ${
+                        venue === vPreset
+                          ? 'bg-emerald-700 text-white border-emerald-800 font-semibold'
+                          : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
+                      }`}
+                    >
+                      {vPreset}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1 font-sans">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1 font-sans">
                 <User className="w-3.5 h-3.5 text-slate-500" />
                 <span>সভাপতি</span>
               </label>
@@ -360,6 +404,27 @@ export const ScheduleItemModal: React.FC<Props> = ({
                 placeholder="যেমন: সচিব"
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 focus:bg-white font-serif-bn"
               />
+              <div className="pt-0.5">
+                <span className="text-[11px] font-semibold text-slate-500 block mb-1 font-sans">
+                  প্রিসেট সভাপতি:
+                </span>
+                <div className="flex flex-wrap gap-1 font-serif-bn">
+                  {CHAIRPERSON_PRESETS.map((cPreset) => (
+                    <button
+                      key={cPreset}
+                      type="button"
+                      onClick={() => setChairperson(cPreset)}
+                      className={`px-2 py-0.5 text-xs font-medium rounded-md border transition-all cursor-pointer ${
+                        chairperson === cPreset
+                          ? 'bg-emerald-700 text-white border-emerald-800 font-semibold'
+                          : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
+                      }`}
+                    >
+                      {cPreset}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
