@@ -16,7 +16,15 @@ import { DriveModal } from './components/DriveModal';
 import { ArchiveModal } from './components/ArchiveModal';
 import { AutoSaveIndicator } from './components/AutoSaveIndicator';
 import { exportScheduleToExcel } from './utils/excelExport';
-import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, Bell, FileSpreadsheet, Archive, Download } from 'lucide-react';
+import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, Bell, FileSpreadsheet, Archive, Download, AlertTriangle, X } from 'lucide-react';
+
+const NEW_DOC_TITLE_PRESETS = [
+  'দৈনন্দিন কর্মসূচি',
+  'প্রকল্প পরিচালক মহোদয়ের দৈনন্দিন কর্মসূচি',
+  'সচিব মহোদয়ের দৈনন্দিন কর্মসূচি',
+  'সাপ্তাহিক কর্মসূচি',
+  'মাসিক কর্মসূচি',
+];
 
 export default function App() {
   const [documents, setDocuments] = useState<ScheduleDocument[]>([]);
@@ -41,6 +49,10 @@ export default function App() {
   const [isGmailModalOpen, setIsGmailModalOpen] = useState<boolean>(false);
   const [isDriveModalOpen, setIsDriveModalOpen] = useState<boolean>(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState<boolean>(false);
+  const [isDeleteDocModalOpen, setIsDeleteDocModalOpen] = useState<boolean>(false);
+  const [isNewDocModalOpen, setIsNewDocModalOpen] = useState<boolean>(false);
+  const [newDocTitle, setNewDocTitle] = useState<string>('');
+  const [newDocDate, setNewDocDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   // Search/Filter state
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -237,7 +249,6 @@ export default function App() {
   // Delete Schedule Item
   const handleDeleteItem = (itemId: string) => {
     if (!activeDoc) return;
-    if (!confirm('আপনি কি নিশ্চিত যে এই কর্মসূচিটি মুছে ফেলতে চান?')) return;
 
     const newItems = activeDoc.items.filter((i) => i.id !== itemId);
     const updatedDoc = {
@@ -295,19 +306,24 @@ export default function App() {
     updateAndSaveActiveDoc(updatedDoc);
   };
 
-  // Create new Schedule Document
-  const handleCreateNewDocument = async () => {
-    const titlePrompt = prompt(
-      'নতুন কর্মসূচির নাম অথবা তারিখ লিখুন:',
-      'দৈনন্দিন কর্মসূচি - ' + formatBengaliDate(new Date().toISOString().split('T')[0])
-    );
-    if (!titlePrompt) return;
+  // Open Create New Document Modal
+  const handleCreateNewDocument = () => {
+    const todayISO = new Date().toISOString().split('T')[0];
+    setNewDocTitle('দৈনন্দিন কর্মসূচি - ' + formatBengaliDate(todayISO));
+    setNewDocDate(todayISO);
+    setIsNewDocModalOpen(true);
+  };
+
+  // Perform Create New Document
+  const performCreateNewDocument = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDocTitle.trim()) return;
 
     const newDoc: ScheduleDocument = {
       ...createDefaultDocument(),
       id: 'doc-' + Date.now(),
-      title: titlePrompt,
-      date: new Date().toISOString().split('T')[0],
+      title: newDocTitle.trim(),
+      date: newDocDate,
       items: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -315,21 +331,24 @@ export default function App() {
 
     setDocuments((prev) => [newDoc, ...prev]);
     setActiveDocId(newDoc.id);
+    setIsNewDocModalOpen(false);
     await saveSchedule(newDoc);
   };
 
-  // Delete entire Document
-  const handleDeleteDocument = async () => {
-    if (documents.length <= 1) {
-      alert('সর্বনিম্ন একটি কর্মসূচি ফাইল থাকা আবশ্যক।');
-      return;
-    }
-    if (!confirm(`আপনি কি "${activeDoc?.title}" সম্পূর্ণ ফাইলটি মুছে ফেলতে চান?`)) return;
+  // Open Delete Document Confirmation Modal
+  const handleDeleteDocument = () => {
+    setIsDeleteDocModalOpen(true);
+  };
+
+  // Perform Delete Document
+  const performDeleteDocument = async () => {
+    if (!activeDoc || documents.length <= 1) return;
 
     const docToDeleteId = activeDoc.id;
     const remainingDocs = documents.filter((d) => d.id !== docToDeleteId);
     setDocuments(remainingDocs);
     setActiveDocId(remainingDocs[0].id);
+    setIsDeleteDocModalOpen(false);
 
     await deleteSchedule(docToDeleteId);
   };
@@ -755,6 +774,177 @@ export default function App() {
         onDeleteArchivedItem={handleDeleteArchivedItem}
         onClearArchive={handleClearArchive}
       />
+
+      {/* Delete Document Confirmation Modal */}
+      {isDeleteDocModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs font-sans">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-150">
+            <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2 text-rose-400 font-bold font-serif-bn">
+                <Trash2 className="w-5 h-5 text-rose-500" />
+                <span>কর্মসূচি ফাইল মুছুন</span>
+              </div>
+              <button
+                onClick={() => setIsDeleteDocModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {documents.length <= 1 ? (
+                <div className="space-y-3 text-center">
+                  <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
+                    <AlertTriangle className="w-6 h-6" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 font-serif-bn text-base">
+                    ফাইল মুছে ফেলা সম্ভব নয়
+                  </h4>
+                  <p className="text-xs text-slate-600 font-sans leading-relaxed">
+                    সিস্টেমে সর্বনিম্ন একটি কর্মসূচি ফাইল থাকা আবশ্যক। আপনি বর্তমান ফাইলের কর্মসূচিগুলো সম্পাদন বা নতুন ফাইল তৈরি করতে পারেন।
+                  </p>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => setIsDeleteDocModalOpen(false)}
+                      className="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white font-medium text-xs rounded-lg transition-colors cursor-pointer font-serif-bn"
+                    >
+                      ঠিক আছে
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 font-serif-bn">
+                  <div className="flex items-start gap-3 p-3 bg-rose-50 rounded-lg border border-rose-200">
+                    <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="text-xs text-rose-950 font-serif-bn space-y-1">
+                      <p className="font-bold text-sm">
+                        আপনি কি নিশ্চিত যে এই সূচি ফাইলটি সম্পূর্ণরূপে মুছে ফেলতে চান?
+                      </p>
+                      <p className="text-slate-600 font-sans text-[11px] pt-1">
+                        ফাইল: <strong className="text-rose-900 font-serif-bn text-xs">{activeDoc?.title}</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 font-serif-bn">
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteDocModalOpen(false)}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition-colors cursor-pointer"
+                    >
+                      বাতিল
+                    </button>
+                    <button
+                      type="button"
+                      onClick={performDeleteDocument}
+                      className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-lg shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>হ্যাঁ, ফাইলটি মুছুন</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create New Document Modal */}
+      {isNewDocModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs font-sans">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-150">
+            <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2 font-bold font-serif-bn text-emerald-400">
+                <Plus className="w-5 h-5" />
+                <span>নতুন কর্মসূচি সূচি তৈরি করুন</span>
+              </div>
+              <button
+                onClick={() => setIsNewDocModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={performCreateNewDocument} className="p-5 space-y-4 font-serif-bn">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-700 font-sans">
+                  সূচির নাম / শিরোনাম *
+                </label>
+                <input
+                  type="text"
+                  value={newDocTitle}
+                  onChange={(e) => setNewDocTitle(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-600 focus:bg-white"
+                  placeholder="যেমন: দৈনন্দিন কর্মসূচি - ৩ আগস্ট ২০২৬"
+                  required
+                />
+                <div className="pt-0.5">
+                  <span className="text-[11px] font-semibold text-slate-500 block mb-1 font-sans">
+                    প্রিসেট শিরোনাম:
+                  </span>
+                  <div className="flex flex-wrap gap-1 font-serif-bn">
+                    {NEW_DOC_TITLE_PRESETS.map((pTitle) => (
+                      <button
+                        key={pTitle}
+                        type="button"
+                        onClick={() => {
+                          const dateSuffix = newDocDate ? ' - ' + formatBengaliDate(newDocDate) : '';
+                          setNewDocTitle(pTitle + dateSuffix);
+                        }}
+                        className={`px-2 py-0.5 text-xs font-medium rounded-md border transition-all cursor-pointer ${
+                          newDocTitle.startsWith(pTitle)
+                            ? 'bg-emerald-700 text-white border-emerald-800 font-semibold'
+                            : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
+                        }`}
+                      >
+                        {pTitle}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1 font-sans">
+                  তারিখ (Date)
+                </label>
+                <input
+                  type="date"
+                  value={newDocDate}
+                  onChange={(e) => {
+                    const selected = e.target.value;
+                    setNewDocDate(selected);
+                    if (selected) {
+                      setNewDocTitle('দৈনন্দিন কর্মসূচি - ' + formatBengaliDate(selected));
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 focus:bg-white font-sans"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setIsNewDocModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition-colors cursor-pointer"
+                >
+                  বাতিল
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-lg shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>তৈরি করুন</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

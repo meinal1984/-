@@ -196,6 +196,15 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
                 color: #0f172a !important;
                 font-weight: bold !important;
               }
+              #printable-notice-area .developer-footer-credit {
+                margin-top: 32px !important;
+                padding-top: 8px !important;
+                border-top: 1px dashed #cbd5e1 !important;
+                text-align: center !important;
+                font-size: 9px !important;
+                color: #64748b !important;
+                font-family: sans-serif !important;
+              }
             `;
             clonedDoc.head.appendChild(overrideStyle);
           }
@@ -576,6 +585,23 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
                 )}
               </div>
             )}
+
+            {/* Developer Footer Credit */}
+            <div 
+              className="developer-footer-credit mt-10 pt-3 border-t border-dashed border-slate-300 text-center text-[10px] text-slate-500 font-sans tracking-wide"
+              style={{
+                marginTop: '32px',
+                paddingTop: '8px',
+                borderTop: '1px dashed #cbd5e1',
+                textAlign: 'center',
+                fontSize: '9px',
+                color: '#64748b',
+                fontFamily: 'sans-serif',
+                letterSpacing: '0.02em',
+              }}
+            >
+              Developer by Mrinal Kanti Roy, Mobile: 01719205945
+            </div>
           </div>
         </div>
       </div>

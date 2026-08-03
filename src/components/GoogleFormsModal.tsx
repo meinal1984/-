@@ -132,17 +132,12 @@ export const GoogleFormsModal: React.FC<Props> = ({ isOpen, onClose, document: s
     setStatusMsg({ type: 'success', text: 'সাইন আউট সম্পন্ন হয়েছে।' });
   };
 
-  // Create Form Handler with Confirmation
+  // Create Form Handler
   const handleCreateForm = async () => {
     if (!token) {
       setStatusMsg({ type: 'error', text: 'অনুগ্রহ করে প্রথমে সাইন ইন করুন।' });
       return;
     }
-
-    const confirmCreate = window.confirm(
-      `আপনি কি "${formTitle}" শিরোনামে একটি নতুন গুগল ফর্ম তৈরি করতে নিশ্চিত? এটি আপনার গুগল ড্রাইভে সেভ হবে।`
-    );
-    if (!confirmCreate) return;
 
     setIsCreating(true);
     setStatusMsg(null);
