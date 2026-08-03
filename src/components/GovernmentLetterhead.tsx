@@ -17,7 +17,7 @@ export const GovernmentLetterhead: React.FC<Props> = ({
   isEditable = true,
 }) => {
   return (
-    <div className="relative bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm transition-all font-serif-bn">
+    <div className="relative bg-white border border-slate-200 rounded-xl p-6 sm:p-8 lg:p-10 shadow-sm transition-all font-serif-bn">
       {isEditable && onEditClick && (
         <button
           onClick={onEditClick}

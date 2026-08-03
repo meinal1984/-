@@ -73,25 +73,28 @@ export const ScheduleTable: React.FC<Props> = ({
   return (
     <div className="bg-white border border-slate-300 rounded-xl shadow-xs overflow-hidden font-sans">
       {/* Table Action Bar */}
-      <div className="no-print p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+      <div className="no-print p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="font-semibold text-slate-900 text-sm flex items-center gap-2">
-            <span>কর্মসূচি তালিকা ({toBengaliNumerals(items.length.toString())} টি)</span>
+          <span className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-2">
+            <span>কর্মসূচি তালিকা</span>
+            <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-xs sm:text-sm font-mono font-bold rounded-md">
+              {toBengaliNumerals(items.length.toString())} টি
+            </span>
           </span>
 
           {/* Local Auto-Save Indicator */}
           <AutoSaveIndicator status={saveStatus} lastSavedTime={lastSavedTime} compact />
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {/* Quick Archive Completed Button */}
           {completedItemsCount > 0 && onArchiveCompletedItems && (
             <button
               onClick={onArchiveCompletedItems}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs sm:text-sm font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
               title="সম্পন্ন চিহ্নিত কর্মসূচিগুলো আর্কাইভে পাঠান"
             >
-              <Archive className="w-3.5 h-3.5 text-amber-700" />
+              <Archive className="w-4 h-4 text-amber-700" />
               <span>
                 সম্পন্নগুলো আর্কাইভে পাঠান ({toBengaliNumerals(completedItemsCount.toString())})
               </span>
@@ -102,13 +105,13 @@ export const ScheduleTable: React.FC<Props> = ({
           {onOpenArchiveModal && (
             <button
               onClick={onOpenArchiveModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
               title="আর্কাইভকৃত পুরনো সূচিসমূহ দেখুন"
             >
-              <Archive className="w-3.5 h-3.5 text-amber-400" />
+              <Archive className="w-4 h-4 text-amber-400" />
               <span>আর্কাইভ</span>
               {archivedCount > 0 && (
-                <span className="px-1.5 py-0.2 bg-amber-500 text-slate-950 font-mono text-[10px] font-bold rounded-full">
+                <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-mono text-xs font-bold rounded-full">
                   {toBengaliNumerals(archivedCount.toString())}
                 </span>
               )}
@@ -118,24 +121,24 @@ export const ScheduleTable: React.FC<Props> = ({
           {onUpdateItem && (
             <button
               onClick={() => setIsInlineEditMode(!isInlineEditMode)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-lg border transition-all cursor-pointer ${
                 isInlineEditMode
                   ? 'bg-amber-100 text-amber-900 border-amber-300 shadow-2xs'
                   : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
               }`}
               title="টেবিলে সরাসরি লিখে এডিট করুন"
             >
-              <Edit3 className="w-3.5 h-3.5" />
+              <Edit3 className="w-4 h-4" />
               <span>{isInlineEditMode ? 'সরাসরি এডিট (চালু)' : 'সরাসরি এডিট'}</span>
             </button>
           )}
 
           <button
             onClick={onAddItem}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs sm:text-sm rounded-lg shadow-xs transition-all active:scale-98 cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs sm:text-sm rounded-lg shadow-xs transition-all active:scale-98 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>নতুন কর্মসূচি যোগ করুন</span>
+            <span>+ নতুন কর্মসূচি যোগ করুন</span>
           </button>
         </div>
       </div>
@@ -171,48 +174,48 @@ export const ScheduleTable: React.FC<Props> = ({
           </div>
         </div>
       ) : (
-        <div className="overflow-x-auto p-2 sm:p-4 bg-slate-100/50">
+        <div className="overflow-x-auto w-full">
           <table className="w-full text-center border-collapse border border-slate-800 bg-white shadow-2xs font-serif-bn">
             <thead>
-              <tr className="bg-sky-100 text-slate-900 border-b border-slate-800 text-sm sm:text-base font-bold">
-                <th className="py-2.5 px-2 w-32 border-r border-slate-800">
+              <tr className="bg-sky-100 text-slate-900 border-b-2 border-slate-800 text-sm sm:text-base font-bold">
+                <th className="py-3 px-2 sm:px-3 w-36 border-r border-slate-800">
                   <div className="flex items-center justify-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-slate-700 no-print" />
                     <span>তারিখ ও বার</span>
                   </div>
                 </th>
-                <th className="py-2.5 px-2 w-28 border-r border-slate-800">
+                <th className="py-3 px-2 sm:px-3 w-32 border-r border-slate-800">
                   <div className="flex items-center justify-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-slate-700 no-print" />
                     <span>সময়</span>
                   </div>
                 </th>
-                <th className="py-2.5 px-2 w-24 sm:w-28 border-r border-slate-800">
+                <th className="py-3 px-2 sm:px-3 w-28 border-r border-slate-800">
                   <div className="flex items-center justify-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5 text-slate-700 no-print" />
                     <span>গুরুত্ব</span>
                   </div>
                 </th>
-                <th className="py-2.5 px-2 w-40 sm:w-48 border-r border-slate-800">
+                <th className="py-3 px-3 sm:px-4 w-48 sm:w-56 border-r border-slate-800">
                   <div className="flex items-center justify-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-slate-700 no-print" />
                     <span>সভার স্থান</span>
                   </div>
                 </th>
-                <th className="py-2.5 px-3 min-w-[220px] border-r border-slate-800">
+                <th className="py-3 px-4 min-w-[240px] border-r border-slate-800">
                   <div className="flex items-center justify-center gap-1">
                     <FileText className="w-3.5 h-3.5 text-slate-700 no-print" />
                     <span>সভার বিষয়</span>
                   </div>
                 </th>
-                <th className="py-2.5 px-2 w-32 sm:w-36 border-r border-slate-800">
+                <th className="py-3 px-3 sm:px-4 w-40 sm:w-48 border-r border-slate-800">
                   <div className="flex items-center justify-center gap-1">
                     <User className="w-3.5 h-3.5 text-slate-700 no-print" />
                     <span>সভাপতি</span>
                   </div>
                 </th>
-                <th className="py-2.5 px-2 w-28 sm:w-32 border-r border-slate-800">মন্তব্য</th>
-                <th className="py-2.5 px-2 w-32 text-center no-print border-l border-slate-800">অ্যাকশন</th>
+                <th className="py-3 px-3 sm:px-4 w-36 sm:w-44 border-r border-slate-800">মন্তব্য</th>
+                <th className="py-3 px-3 w-36 text-center no-print border-l border-slate-800">অ্যাকশন</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800 text-xs sm:text-sm text-slate-950 font-medium">

@@ -5,6 +5,8 @@ import { getCurrentBengaliMonthYear } from '../utils/bengaliUtils';
 
 const NOTICE_TITLE_PRESETS = [
   'দৈনন্দিন কর্মসূচি',
+  'মহাপরিচালক মহোদয়ের দৈনন্দিন কর্মসূচি',
+  'পরিচালক মহোদয়ের দৈনন্দিন কর্মসূচি',
   'প্রকল্প পরিচালক মহোদয়ের দৈনন্দিন কর্মসূচি',
   'সচিব মহোদয়ের দৈনন্দিন কর্মসূচি',
   'দৈনন্দিন সভার সময়সূচি',
@@ -179,7 +181,7 @@ export const LetterheadEditorModal: React.FC<Props> = ({
                 onClick={() => handleApplyPreset('bfa_project')}
                 className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 shadow-2xs"
               >
-                🎞️ ফিল্ম আর্কাইভ প্রকল্প (ছবি স্টাইল)
+                📂 প্রকল্প / প্রধান শিরোনাম
               </button>
               <button
                 type="button"

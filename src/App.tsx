@@ -20,6 +20,8 @@ import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, 
 
 const NEW_DOC_TITLE_PRESETS = [
   'দৈনন্দিন কর্মসূচি',
+  'মহাপরিচালক মহোদয়ের দৈনন্দিন কর্মসূচি',
+  'পরিচালক মহোদয়ের দৈনন্দিন কর্মসূচি',
   'প্রকল্প পরিচালক মহোদয়ের দৈনন্দিন কর্মসূচি',
   'সচিব মহোদয়ের দৈনন্দিন কর্মসূচি',
   'সাপ্তাহিক কর্মসূচি',
@@ -539,13 +541,13 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+      <main className="flex-1 max-w-[1800px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Document Title Bar & Quick Actions */}
-        <div className="no-print bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="no-print bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-2xs flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2.5">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-emerald-700" />
+              <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+                <Calendar className="w-5 h-5 text-emerald-700 shrink-0" />
                 <input
                   type="text"
                   value={activeDoc?.title || ''}
@@ -553,7 +555,7 @@ export default function App() {
                     const updated = { ...activeDoc, title: e.target.value };
                     updateAndSaveActiveDoc(updated);
                   }}
-                  className="font-serif-bn font-bold text-lg sm:text-xl text-slate-900 bg-transparent border-b border-dashed border-slate-300 focus:border-emerald-700 focus:outline-hidden px-1"
+                  className="font-serif-bn font-bold text-lg sm:text-xl text-slate-900 bg-transparent border-b border-dashed border-slate-300 focus:border-emerald-700 focus:outline-hidden px-1 min-w-[300px] sm:min-w-[420px] md:min-w-[520px]"
                   placeholder="সূচির শিরোনাম লিখুন"
                 />
               </div>
