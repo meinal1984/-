@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ScheduleDocument } from '../types';
 import { GovernmentEmblem } from './GovernmentEmblem';
 import { DepartmentLogo } from './DepartmentLogo';
-import { Printer, Download, X, Loader2 } from 'lucide-react';
+import { Printer, Download, X, Loader2, ExternalLink } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import { getCurrentBengaliMonthYear } from '../utils/bengaliUtils';
 
@@ -217,6 +217,11 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
   };
 
   const handlePrint = () => {
+    // Direct window print opens native browser printer selection & Save as PDF dialog
+    window.print();
+  };
+
+  const handlePrintInNewWindow = () => {
     const element = window.document.getElementById('printable-notice-area');
     if (!element) {
       window.print();
@@ -224,18 +229,8 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
     }
 
     try {
-      const printIframe = document.createElement('iframe');
-      printIframe.style.position = 'fixed';
-      printIframe.style.right = '0';
-      printIframe.style.bottom = '0';
-      printIframe.style.width = '0px';
-      printIframe.style.height = '0px';
-      printIframe.style.border = '0px';
-      printIframe.title = 'Print Window';
-      document.body.appendChild(printIframe);
-
-      const iframeDoc = printIframe.contentWindow?.document;
-      if (!iframeDoc) {
+      const printWin = window.open('', '_blank', 'width=1000,height=900,scrollbars=yes');
+      if (!printWin) {
         window.print();
         return;
       }
@@ -244,8 +239,7 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
         .map(s => s.outerHTML)
         .join('\n');
 
-      iframeDoc.open();
-      iframeDoc.write(`
+      printWin.document.write(`
         <!DOCTYPE html>
         <html lang="bn">
           <head>
@@ -264,7 +258,7 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
                 background-color: #ffffff !important;
                 color: #000000 !important;
                 margin: 0 !important;
-                padding: 0 !important;
+                padding: 15px !important;
                 font-family: 'Tiro Bangla', 'Noto Serif Bengali', 'Hind Siliguri', serif !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -296,29 +290,26 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
             </style>
           </head>
           <body>
+            <div style="margin-bottom: 20px; text-align: center;" class="no-print">
+              <button onclick="window.print()" style="padding: 10px 24px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+                🖨️ প্রিন্ট ও প্রিন্টার সিলেক্ট করুন (Print / Save as PDF)
+              </button>
+            </div>
             ${element.outerHTML}
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.focus();
+                  window.print();
+                }, 400);
+              };
+            </script>
           </body>
         </html>
       `);
-      iframeDoc.close();
-
-      setTimeout(() => {
-        try {
-          printIframe.contentWindow?.focus();
-          printIframe.contentWindow?.print();
-        } catch (e) {
-          console.error('Iframe print error:', e);
-          window.print();
-        } finally {
-          setTimeout(() => {
-            if (document.body.contains(printIframe)) {
-              document.body.removeChild(printIframe);
-            }
-          }, 1000);
-        }
-      }, 300);
+      printWin.document.close();
     } catch (e) {
-      console.error('Print trigger error:', e);
+      console.error('New window print error:', e);
       window.print();
     }
   };
@@ -335,11 +326,13 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
             </h3>
           </div>
 
-          <div className="flex items-center gap-2 font-sans">
+          <div className="flex flex-wrap items-center gap-2 font-sans">
+            {/* PDF Download Button */}
             <button
               onClick={handleDownloadPDF}
               disabled={isGeneratingPdf}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 text-white font-medium text-xs sm:text-sm rounded-lg shadow-sm transition-all active:scale-98 cursor-pointer"
+              title="পিডিএফ ফাইল ডাউনলোড ও সংরক্ষণ করুন"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 text-white font-medium text-xs sm:text-sm rounded-lg shadow-2xs transition-all cursor-pointer"
             >
               {isGeneratingPdf ? (
                 <>
@@ -349,17 +342,19 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
               ) : (
                 <>
                   <Download className="w-4 h-4 text-emerald-200" />
-                  <span>পিডিএফ ডাউনলোড (PDF)</span>
+                  <span>পিডিএফ (PDF)</span>
                 </>
               )}
             </button>
 
+            {/* Print Button */}
             <button
-              onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 font-medium text-xs sm:text-sm rounded-lg shadow-sm transition-all active:scale-98 cursor-pointer"
+              onClick={handlePrintInNewWindow}
+              title="প্রিন্ট করুন বা প্রিন্টার সিলেক্ট করুন"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs sm:text-sm rounded-lg shadow-2xs transition-all cursor-pointer"
             >
-              <Printer className="w-4 h-4 text-slate-300" />
-              <span>প্রিন্ট করুন</span>
+              <Printer className="w-4 h-4 text-sky-100" />
+              <span>প্রিন্ট (Print)</span>
             </button>
 
             <button
@@ -439,7 +434,7 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
                   </div>
                 </div>
 
-                {/* Right: Department Logo */}
+                {/* Right: Department Logo (BFA Official Logo) */}
                 <div style={{ width: '18%', minWidth: '70px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                   {letterhead?.showRightLogo !== false && (
                     letterhead?.customRightLogoUrl ? (
@@ -447,12 +442,12 @@ export const PrintPDFModal: React.FC<Props> = ({ isOpen, onClose, document: sche
                         src={letterhead.customRightLogoUrl}
                         alt="Department Logo"
                         className="h-16 w-16 object-contain"
-                        style={{ width: '64px', height: '64px', maxWidth: '64px', maxHeight: '64px', objectFit: 'contain' }}
+                        style={{ width: '68px', height: '68px', maxWidth: '68px', maxHeight: '68px', objectFit: 'contain' }}
                         referrerPolicy="no-referrer"
                       />
                     ) : (
                       <DepartmentLogo
-                        size={64}
+                        size={68}
                         variant={letterhead?.rightLogoPreset || 'bfa_logo'}
                       />
                     )

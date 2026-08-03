@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ScheduleDocument, LetterheadConfig } from '../types';
 import { generateShareableText } from '../utils/bengaliUtils';
-import { X, Share2, Copy, Check, Download, FileSpreadsheet, Edit3, RotateCcw, Award, Mail, HardDrive } from 'lucide-react';
+import { exportScheduleToExcel } from '../utils/excelExport';
+import { X, Share2, Copy, Check, Download, FileSpreadsheet, Edit3, RotateCcw, Award, Mail, HardDrive, FileOutput } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -15,7 +16,7 @@ interface Props {
 export const ShareModal: React.FC<Props> = ({
   isOpen,
   onClose,
-  document,
+  document: scheduleDoc,
   onSaveLetterhead,
   onOpenGmailModal,
   onOpenDriveModal,
@@ -34,12 +35,12 @@ export const ShareModal: React.FC<Props> = ({
 
   // Sync state whenever document changes or modal opens
   useEffect(() => {
-    if (document && isOpen) {
-      const lh = document.letterhead || {};
+    if (scheduleDoc && isOpen) {
+      const lh = scheduleDoc.letterhead || {};
       const initialMemo = lh.memoNo || '';
       const initialDate = lh.issueDate || '';
       const initialBranch = lh.branchName || '';
-      const initialSubj = lh.subject || 'দৈনন্দিন কর্মসূচি';
+      const initialSubj = lh.subject || scheduleDoc.title || 'দৈনন্দিন কর্মসূচি';
 
       setMemoNo(initialMemo);
       setIssueDate(initialDate);
@@ -47,7 +48,7 @@ export const ShareModal: React.FC<Props> = ({
       setSubject(initialSubj);
 
       const tempDoc = {
-        ...document,
+        ...scheduleDoc,
         letterhead: {
           ...lh,
           memoNo: initialMemo,
@@ -60,9 +61,9 @@ export const ShareModal: React.FC<Props> = ({
       setCustomText(generateShareableText(tempDoc));
       setIsManualTextEdit(false);
     }
-  }, [document, isOpen]);
+  }, [scheduleDoc, isOpen]);
 
-  if (!isOpen || !document) return null;
+  if (!isOpen || !scheduleDoc) return null;
 
   // Handle updates to header fields (Memo No, Date, Branch, Subject)
   const handleHeaderFieldChange = (
@@ -80,7 +81,7 @@ export const ShareModal: React.FC<Props> = ({
     if (field === 'subject') { nextSubj = val; setSubject(val); }
 
     const updatedLh: LetterheadConfig = {
-      ...(document.letterhead || {}),
+      ...(scheduleDoc.letterhead || {}),
       memoNo: nextMemo,
       issueDate: nextDate,
       branchName: nextBranch,
@@ -93,7 +94,7 @@ export const ShareModal: React.FC<Props> = ({
 
     if (!isManualTextEdit) {
       const updatedDoc = {
-        ...document,
+        ...scheduleDoc,
         letterhead: updatedLh,
       };
       setCustomText(generateShareableText(updatedDoc));
@@ -102,7 +103,7 @@ export const ShareModal: React.FC<Props> = ({
 
   const handleResetText = () => {
     const currentLh: LetterheadConfig = {
-      ...(document.letterhead || {}),
+      ...(scheduleDoc.letterhead || {}),
       memoNo,
       issueDate,
       branchName,
@@ -110,7 +111,7 @@ export const ShareModal: React.FC<Props> = ({
     };
 
     const updatedDoc = {
-      ...document,
+      ...scheduleDoc,
       letterhead: currentLh,
     };
 
@@ -128,7 +129,7 @@ export const ShareModal: React.FC<Props> = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: document.title || 'দৈনন্দিন কর্মসূচি',
+          title: scheduleDoc.title || 'দৈনন্দিন কর্মসূচি',
           text: customText,
         });
       } catch (err) {
@@ -140,23 +141,23 @@ export const ShareModal: React.FC<Props> = ({
   };
 
   const handleDownloadJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(document, null, 2));
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scheduleDoc, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `schedule_${document.id}_${Date.now()}.json`);
+    downloadAnchor.setAttribute("download", `schedule_${scheduleDoc.id}_${Date.now()}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
   };
 
   const handleDownloadCSV = () => {
-    if (!document.items || document.items.length === 0) {
+    if (!scheduleDoc.items || scheduleDoc.items.length === 0) {
       alert('রপ্তানি করার মতো কোনো কর্মসূচি পাওয়া যায়নি।');
       return;
     }
 
     let csvContent = "\uFEFFক্রমিক নং,তারিখ ও সময়,বিবরণ,সভার স্থান,সভাপতি,মন্তব্য\n";
-    document.items.forEach((item) => {
+    scheduleDoc.items.forEach((item) => {
       const row = [
         `"${item.serialNo || ''}"`,
         `"${item.dateTime || ''}"`,
@@ -347,20 +348,29 @@ export const ShareModal: React.FC<Props> = ({
           {/* Additional File Export Options */}
           <div className="pt-3 border-t border-slate-200">
             <label className="block text-xs font-semibold text-slate-700 mb-2">
-              অন্যান্য ফরম্যাটে ডাটা ব্যাকআপ ডাউনলোড:
+              অন্যান্য ফরম্যাটে ডাটা এক্সপোর্ট ও ব্যাকআপ ডাউনলোড:
             </label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                onClick={() => exportScheduleToExcel(scheduleDoc)}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all shadow-2xs cursor-pointer"
+                title="সম্পূর্ণ সময়সূচি এমএস এক্সেল (.xlsx) ফরম্যাটে ডাউনলোড করুন"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
+                <span>Excel (.xlsx) রপ্তানি</span>
+              </button>
+
               <button
                 onClick={handleDownloadCSV}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium rounded-lg border border-slate-300 transition-colors"
+                className="flex items-center justify-center gap-1.5 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
-                <span>Excel (CSV) রপ্তানি</span>
+                <FileOutput className="w-4 h-4 text-emerald-700" />
+                <span>CSV ফাইল</span>
               </button>
 
               <button
                 onClick={handleDownloadJSON}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium rounded-lg border border-slate-300 transition-colors"
+                className="flex items-center justify-center gap-1.5 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
               >
                 <Download className="w-4 h-4 text-blue-700" />
                 <span>JSON ব্যাকআপ</span>

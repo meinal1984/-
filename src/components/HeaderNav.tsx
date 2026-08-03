@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScheduleDocument } from '../types';
 import { GovernmentEmblem } from './GovernmentEmblem';
+import { DepartmentLogo } from './DepartmentLogo';
 import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet, Mail, HardDrive, Archive } from 'lucide-react';
 import { formatBengaliDate, toBengaliNumerals } from '../utils/bengaliUtils';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
@@ -18,6 +19,7 @@ interface Props {
   onOpenGmailModal: () => void;
   onOpenDriveModal?: () => void;
   onOpenArchiveModal?: () => void;
+  onExportExcel?: () => void;
   archivedCount?: number;
   isSaving?: boolean;
   saveStatus?: 'saved' | 'syncing' | 'error';
@@ -37,6 +39,7 @@ export const HeaderNav: React.FC<Props> = ({
   onOpenGmailModal,
   onOpenDriveModal,
   onOpenArchiveModal,
+  onExportExcel,
   archivedCount = 0,
   isSaving = false,
   saveStatus,
@@ -49,8 +52,8 @@ export const HeaderNav: React.FC<Props> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Brand & App Title */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-          <div className="flex items-center gap-2.5">
-            <GovernmentEmblem size={38} variant="bd_crest" />
+          <div className="flex items-center gap-3">
+            <GovernmentEmblem size={40} variant="bd_crest" />
             <div>
               <h1 className="font-serif-bn font-bold text-lg sm:text-xl text-white tracking-wide flex items-center gap-2">
                 <span>দৈনন্দিন কর্মসূচি</span>
@@ -64,18 +67,24 @@ export const HeaderNav: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Mobile New Doc Trigger */}
-          <button
-            onClick={onNewDocument}
-            className="md:hidden p-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg"
-            title="নতুন সূচি তৈরি করুন"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
+          {/* Mobile Right Logo & New Doc Trigger */}
+          <div className="flex items-center gap-2 md:hidden">
+            <DepartmentLogo size={34} />
+            <button
+              onClick={onNewDocument}
+              className="p-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg"
+              title="নতুন সূচি তৈরি করুন"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        {/* Saved Schedules Selector & Document Switcher */}
+        {/* Saved Schedules Selector & Right BFA Logo */}
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+          <div className="hidden lg:flex items-center gap-2 pr-2 mr-1 border-r border-slate-800" title="বাংলাদেশ ফিল্ম আর্কাইভ (BFA)">
+            <DepartmentLogo size={36} />
+          </div>
           <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-300">
             <Calendar className="w-4 h-4 text-emerald-400 shrink-0" />
             <select
@@ -159,6 +168,17 @@ export const HeaderNav: React.FC<Props> = ({
             <Printer className="w-4 h-4" />
             <span>পিডিএফ প্রিন্ট</span>
           </button>
+
+          {onExportExcel && (
+            <button
+              onClick={onExportExcel}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-emerald-100 border border-emerald-600 text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
+              title="এমএস এক্সেল (.xlsx) ফাইল ডাউনলোড করুন"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-300" />
+              <span>এক্সেল (.xlsx)</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenNotificationModal}

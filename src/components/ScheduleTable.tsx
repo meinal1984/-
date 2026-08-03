@@ -16,6 +16,7 @@ import {
   Square,
   Edit3,
   Archive,
+  AlertCircle,
 } from 'lucide-react';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 import { toBengaliNumerals } from '../utils/bengaliUtils';
@@ -186,6 +187,12 @@ export const ScheduleTable: React.FC<Props> = ({
                     <span>সময়</span>
                   </div>
                 </th>
+                <th className="py-2.5 px-2 w-24 sm:w-28 border-r border-slate-800">
+                  <div className="flex items-center justify-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-slate-700 no-print" />
+                    <span>গুরুত্ব</span>
+                  </div>
+                </th>
                 <th className="py-2.5 px-2 w-40 sm:w-48 border-r border-slate-800">
                   <div className="flex items-center justify-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-slate-700 no-print" />
@@ -205,7 +212,7 @@ export const ScheduleTable: React.FC<Props> = ({
                   </div>
                 </th>
                 <th className="py-2.5 px-2 w-28 sm:w-32 border-r border-slate-800">মন্তব্য</th>
-                <th className="py-2.5 px-2 w-28 text-center no-print border-l border-slate-800">অ্যাকশন</th>
+                <th className="py-2.5 px-2 w-32 text-center no-print border-l border-slate-800">অ্যাকশন</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800 text-xs sm:text-sm text-slate-950 font-medium">
@@ -223,7 +230,7 @@ export const ScheduleTable: React.FC<Props> = ({
                         type="text"
                         value={item.dateAndDay || item.dateTime || ''}
                         onChange={(e) => handleCellChange(item, 'dateAndDay', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-bold text-black font-serif-bn"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs sm:text-sm font-bold text-black font-serif-bn"
                       />
                     ) : (
                       item.dateAndDay || item.dateTime || '—'
@@ -237,10 +244,38 @@ export const ScheduleTable: React.FC<Props> = ({
                         type="text"
                         value={item.timeOnly || ''}
                         onChange={(e) => handleCellChange(item, 'timeOnly', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-medium text-slate-900 font-serif-bn"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs sm:text-sm font-medium text-slate-900 font-serif-bn"
                       />
                     ) : (
                       item.timeOnly || '—'
+                    )}
+                  </td>
+
+                  {/* Priority (গুরুত্ব) */}
+                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle">
+                    {isInlineEditMode ? (
+                      <select
+                        value={item.priority || 'medium'}
+                        onChange={(e) => handleCellChange(item, 'priority', e.target.value)}
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-bold text-slate-900 font-serif-bn cursor-pointer"
+                      >
+                        <option value="high">উচ্চ (High)</option>
+                        <option value="medium">মাঝারি (Med)</option>
+                        <option value="low">সাধারণ (Low)</option>
+                      </select>
+                    ) : (
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-2xs ${
+                        item.priority === 'high'
+                          ? 'bg-rose-100 text-rose-900 border-rose-300'
+                          : item.priority === 'low'
+                          ? 'bg-sky-100 text-sky-900 border-sky-300'
+                          : 'bg-amber-100 text-amber-900 border-amber-300'
+                      }`}>
+                        <span className={`w-2 h-2 rounded-full ${
+                          item.priority === 'high' ? 'bg-rose-600 animate-pulse' : item.priority === 'low' ? 'bg-sky-600' : 'bg-amber-600'
+                        }`} />
+                        <span>{item.priority === 'high' ? 'উচ্চ' : item.priority === 'low' ? 'সাধারণ' : 'মাঝারি'}</span>
+                      </span>
                     )}
                   </td>
 
@@ -251,7 +286,7 @@ export const ScheduleTable: React.FC<Props> = ({
                         type="text"
                         value={item.venue || ''}
                         onChange={(e) => handleCellChange(item, 'venue', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-900 font-serif-bn"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs sm:text-sm text-slate-900 font-serif-bn"
                       />
                     ) : (
                       item.venue || '—'
@@ -265,7 +300,7 @@ export const ScheduleTable: React.FC<Props> = ({
                         rows={2}
                         value={item.description || ''}
                         onChange={(e) => handleCellChange(item, 'description', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs font-bold text-slate-900 resize-y font-serif-bn"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs sm:text-sm font-bold text-slate-900 resize-y font-serif-bn"
                       />
                     ) : (
                       <div className={item.completed ? 'line-through text-slate-400 font-normal' : ''}>
@@ -275,13 +310,13 @@ export const ScheduleTable: React.FC<Props> = ({
                   </td>
 
                   {/* 5. Chairperson (সভাপতি) */}
-                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle text-slate-900">
+                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle text-slate-900 leading-snug">
                     {isInlineEditMode ? (
                       <input
                         type="text"
                         value={item.chairperson || ''}
                         onChange={(e) => handleCellChange(item, 'chairperson', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-900 font-serif-bn"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs sm:text-sm text-slate-900 font-serif-bn"
                       />
                     ) : (
                       item.chairperson || '—'
@@ -289,13 +324,13 @@ export const ScheduleTable: React.FC<Props> = ({
                   </td>
 
                   {/* 6. Remarks (মন্তব্য) */}
-                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle text-slate-800 text-xs">
+                  <td className="py-2.5 px-2 text-center border-r border-slate-800 align-middle text-slate-800 text-xs sm:text-sm leading-snug">
                     {isInlineEditMode ? (
                       <input
                         type="text"
                         value={item.remarks || ''}
                         onChange={(e) => handleCellChange(item, 'remarks', e.target.value)}
-                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs text-slate-800 font-serif-bn"
+                        className="w-full text-center bg-amber-50/70 focus:bg-white border border-amber-300 focus:border-amber-600 rounded px-1 py-0.5 text-xs sm:text-sm text-slate-800 font-serif-bn"
                       />
                     ) : (
                       item.remarks || '—'
@@ -303,8 +338,8 @@ export const ScheduleTable: React.FC<Props> = ({
                   </td>
 
                   {/* Action Buttons */}
-                  <td className="py-2 px-1.5 text-center align-middle no-print border-l border-slate-800 bg-slate-50/50">
-                    <div className="flex items-center justify-center gap-0.5">
+                  <td className="py-2.5 px-1.5 text-center align-middle no-print border-l border-slate-800 bg-slate-50/50">
+                    <div className="flex items-center justify-center gap-1">
                       {/* Mark Completed Toggle */}
                       {onToggleComplete && (
                         <button

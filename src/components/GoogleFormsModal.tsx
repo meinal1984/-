@@ -38,7 +38,7 @@ interface Props {
   document: ScheduleDocument;
 }
 
-export const GoogleFormsModal: React.FC<Props> = ({ isOpen, onClose, document }) => {
+export const GoogleFormsModal: React.FC<Props> = ({ isOpen, onClose, document: scheduleDoc }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -89,9 +89,9 @@ export const GoogleFormsModal: React.FC<Props> = ({ isOpen, onClose, document })
 
   // Set default title & description whenever document changes
   useEffect(() => {
-    if (document) {
-      const lh = document.letterhead || {};
-      const subject = lh.subject || document.title || 'দৈনন্দিন কর্মসূচি';
+    if (scheduleDoc) {
+      const lh = scheduleDoc.letterhead || {};
+      const subject = lh.subject || scheduleDoc.title || 'দৈনন্দিন কর্মসূচি';
       const memo = lh.memoNo ? ` (স্মারক নং: ${lh.memoNo})` : '';
       const date = lh.issueDate ? ` - তারিখ: ${lh.issueDate}` : '';
 
@@ -100,7 +100,7 @@ export const GoogleFormsModal: React.FC<Props> = ({ isOpen, onClose, document })
         `মান্যবর মহোদয়ের ${subject}${memo}${date} এ অংশগ্রহণের তথ্য, কর্মকর্তা/প্রতিনিধির বিবরণ ও মতামত সংগ্রহের জন্য এই গুগল ফর্ম তৈরি করা হয়েছে।`
       );
     }
-  }, [document]);
+  }, [scheduleDoc]);
 
   if (!isOpen) return null;
 

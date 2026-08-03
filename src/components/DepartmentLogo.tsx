@@ -1,4 +1,6 @@
 import React from 'react';
+import { BFA_LOGO_BASE64, BFA_LOGO_URL } from '../utils/logoAssets';
+import { GovernmentEmblem } from './GovernmentEmblem';
 
 interface DepartmentLogoProps {
   size?: number;
@@ -12,6 +14,10 @@ export const DepartmentLogo: React.FC<DepartmentLogoProps> = ({
   className = '',
 }) => {
   if (variant === 'none') return null;
+
+  if (variant === 'govt_crest') {
+    return <GovernmentEmblem size={size} className={className} />;
+  }
 
   if (variant === 'dc_seal') {
     return (
@@ -35,7 +41,7 @@ export const DepartmentLogo: React.FC<DepartmentLogoProps> = ({
           <circle cx="60" cy="60" r="56" fill="#047857" />
           <circle cx="60" cy="60" r="50" fill="#ffffff" stroke="#eab308" strokeWidth="2" />
           <circle cx="60" cy="60" r="42" fill="#065f46" />
-          <text x="60" y="52" textAnchor="middle" fill="#ffffff" fontSize="12" fontStyle="bold" fontFamily="sans-serif">
+          <text x="60" y="52" textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="bold" fontFamily="sans-serif">
             জেলা প্রশাসন
           </text>
           <text x="60" y="70" textAnchor="middle" fill="#fef08a" fontSize="10" fontFamily="sans-serif">
@@ -47,15 +53,13 @@ export const DepartmentLogo: React.FC<DepartmentLogoProps> = ({
     );
   }
 
-  // Default: BFA Bangladesh Film Archive Logo (matching the uploaded image!)
+  // Default: BFA Bangladesh Film Archive Official Logo
   return (
     <div className={`inline-flex flex-col items-center justify-center text-center ${className}`}>
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 160 120"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+      <img
+        src={BFA_LOGO_BASE64 || BFA_LOGO_URL}
+        alt="বাংলাদেশ ফিল্ম আর্কাইভ লোগো"
+        className="object-contain select-none pointer-events-none"
         style={{
           width: `${size}px`,
           height: `${size}px`,
@@ -64,41 +68,16 @@ export const DepartmentLogo: React.FC<DepartmentLogoProps> = ({
           minWidth: `${size}px`,
           minHeight: `${size}px`,
           display: 'block',
+          objectFit: 'contain',
         }}
-      >
-        {/* Film Wheel Frame */}
-        <circle cx="80" cy="50" r="42" fill="#1e293b" />
-        <circle cx="80" cy="50" r="38" fill="#ffffff" stroke="#0f172a" strokeWidth="3" />
-
-        {/* Film Strip Cutouts / Apertures */}
-        <path d="M80 50 L80 12 A38 38 0 0 1 113 31 Z" fill="#dc2626" />
-        <path d="M80 50 L113 31 A38 38 0 0 1 113 69 Z" fill="#eab308" />
-        <path d="M80 50 L113 69 A38 38 0 0 1 80 88 Z" fill="#2563eb" />
-
-        <circle cx="80" cy="50" r="22" fill="#ffffff" />
-        <circle cx="80" cy="50" r="16" fill="#0f172a" />
-
-        {/* BFA Bold Acronym */}
-        <text
-          x="80"
-          y="56"
-          textAnchor="middle"
-          fill="#ffffff"
-          fontSize="16"
-          fontWeight="900"
-          fontFamily="sans-serif"
-          letterSpacing="1"
-        >
-          BFA
-        </text>
-
-        {/* Film Sprocket Perforations */}
-        <rect x="42" y="46" width="6" height="8" rx="1" fill="#0f172a" />
-        <rect x="112" y="46" width="6" height="8" rx="1" fill="#0f172a" />
-      </svg>
-      <span className="text-[10px] font-bold text-slate-900 tracking-tight leading-none mt-0.5">
-        বাংলাদেশ ফিল্ম আর্কাইভ
-      </span>
+        referrerPolicy="no-referrer"
+        onError={(e) => {
+          e.currentTarget.src = BFA_LOGO_URL;
+        }}
+      />
     </div>
   );
 };
+
+
+

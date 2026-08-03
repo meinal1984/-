@@ -222,6 +222,21 @@ export const ArchiveModal: React.FC<Props> = ({
                         </span>
                       )}
 
+                      {item.priority && (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full border ${
+                          item.priority === 'high'
+                            ? 'bg-rose-100 text-rose-800 border-rose-300'
+                            : item.priority === 'low'
+                            ? 'bg-sky-100 text-sky-800 border-sky-300'
+                            : 'bg-amber-100 text-amber-800 border-amber-300'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            item.priority === 'high' ? 'bg-rose-600' : item.priority === 'low' ? 'bg-sky-600' : 'bg-amber-600'
+                          }`} />
+                          <span>{item.priority === 'high' ? 'উচ্চ' : item.priority === 'low' ? 'সাধারণ' : 'মাঝারি'}</span>
+                        </span>
+                      )}
+
                       <span className="text-xs font-bold text-slate-900 font-serif-bn flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-slate-500" />
                         {item.dateAndDay || item.dateTime || '—'}

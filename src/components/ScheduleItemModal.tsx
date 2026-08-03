@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScheduleItem } from '../types';
-import { X, Save, Clock, MapPin, User, FileText, Calendar, Sparkles, Check, ChevronRight } from 'lucide-react';
+import { ScheduleItem, PriorityLevel } from '../types';
+import { X, Save, Clock, MapPin, User, FileText, Calendar, Sparkles, Check, ChevronRight, AlertCircle, Flag } from 'lucide-react';
 import {
   toBengaliNumerals,
   formatBengaliDateAndDay,
@@ -25,6 +25,18 @@ const TIME_PRESETS = [
   { time24: '18:00', label: 'সন্ধ্যা ৬:০০ টা' },
 ];
 
+const DESCRIPTION_PRESETS = [
+  'প্রকল্প স্টিয়ারিং কমিটির (PSC) সভা',
+  'আইন-শৃঙ্খলা সংক্রান্ত জেলা কমিটির মাসিক সভা',
+  'বার্ষিক কর্মসম্পাদন চুক্তি (APA) বিষয়ক সভা',
+  'প্রকল্প বাস্তবায়নের অগ্রগতি পর্যালোচনা সভা',
+  'জাতীয় দিবস উদ্‌যাপন সংক্রান্ত প্রস্তুতিমূলক সভা',
+  'বিভাগীয় কর্মকর্তা ও দপ্তর প্রধানদের সমন্বয় সভা',
+  'ডিজিটাল উদ্ভাবনী মেলার আয়োজনের প্রস্তুতি সভা',
+  'সাধারণ জনগণের গণশুনানি ও স্মারকলিপি গ্রহণ',
+  'বাজেট ও অর্থ কমিটির সমন্বয় বৈঠক',
+];
+
 export const ScheduleItemModal: React.FC<Props> = ({
   isOpen,
   onClose,
@@ -43,6 +55,7 @@ export const ScheduleItemModal: React.FC<Props> = ({
   const [venue, setVenue] = useState('');
   const [chairperson, setChairperson] = useState('');
   const [remarks, setRemarks] = useState('');
+  const [priority, setPriority] = useState<PriorityLevel>('medium');
 
   useEffect(() => {
     if (itemToEdit) {
@@ -52,6 +65,7 @@ export const ScheduleItemModal: React.FC<Props> = ({
       setVenue(itemToEdit.venue || '');
       setChairperson(itemToEdit.chairperson || '');
       setRemarks(itemToEdit.remarks || '');
+      setPriority(itemToEdit.priority || 'medium');
     } else {
       const todayIso = new Date().toISOString().split('T')[0];
       setRawDate(todayIso);
@@ -62,6 +76,7 @@ export const ScheduleItemModal: React.FC<Props> = ({
       setVenue('সভাকক্ষ, তথ্য ও সম্প্রচার মন্ত্রণালয়');
       setChairperson('সচিব');
       setRemarks('');
+      setPriority('medium');
     }
   }, [itemToEdit, suggestedSerialNo, isOpen]);
 
@@ -121,6 +136,7 @@ export const ScheduleItemModal: React.FC<Props> = ({
       venue: venue.trim(),
       chairperson: chairperson.trim(),
       remarks: remarks.trim(),
+      priority,
       completed: itemToEdit ? itemToEdit.completed : false,
     };
 
@@ -275,19 +291,45 @@ export const ScheduleItemModal: React.FC<Props> = ({
           </div>
 
           {/* Description / Subject */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1 font-sans">
-              <FileText className="w-3.5 h-3.5 text-slate-500" />
-              <span>সভার বিষয় / বিবরণ *</span>
-            </label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between font-sans">
+              <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1">
+                <FileText className="w-3.5 h-3.5 text-slate-500" />
+                <span>সভার বিষয় / বিবরণ *</span>
+              </label>
+              <span className="text-[11px] text-slate-500 font-normal">দ্রুত প্রিসেট নির্বাচন করুন</span>
+            </div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="যেমন: প্রকল্প স্টিয়ারিং কমিটির সভা..."
-              rows={3}
+              rows={2}
               className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm font-bold font-serif-bn text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 focus:bg-white leading-relaxed"
               required
             />
+
+            {/* Description / Topic Presets */}
+            <div className="pt-1">
+              <span className="text-[11px] font-semibold text-slate-600 block mb-1 font-sans">
+                প্রিসেট সভার নাম / বিষয়:
+              </span>
+              <div className="flex flex-wrap gap-1.5 font-serif-bn">
+                {DESCRIPTION_PRESETS.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setDescription(preset)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md border transition-all cursor-pointer shadow-2xs ${
+                      description === preset
+                        ? 'bg-emerald-700 text-white border-emerald-800'
+                        : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
+                    }`}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Venue & Chairperson Row */}
@@ -318,6 +360,54 @@ export const ScheduleItemModal: React.FC<Props> = ({
                 placeholder="যেমন: সচিব"
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 focus:bg-white font-serif-bn"
               />
+            </div>
+          </div>
+
+          {/* Priority Level */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1 font-sans">
+              <AlertCircle className="w-3.5 h-3.5 text-slate-500" />
+              <span>গুরুত্ব / অগ্রাধিকার (Priority Level)</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2 font-serif-bn">
+              <button
+                type="button"
+                onClick={() => setPriority('high')}
+                className={`py-2 px-3 rounded-lg border text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+                  priority === 'high'
+                    ? 'bg-rose-600 text-white border-rose-700 ring-2 ring-rose-400'
+                    : 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${priority === 'high' ? 'bg-white' : 'bg-rose-600'}`} />
+                <span>উচ্চ (High)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPriority('medium')}
+                className={`py-2 px-3 rounded-lg border text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+                  priority === 'medium'
+                    ? 'bg-amber-500 text-slate-950 border-amber-600 ring-2 ring-amber-300'
+                    : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${priority === 'medium' ? 'bg-slate-950' : 'bg-amber-600'}`} />
+                <span>মাঝারি (Medium)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPriority('low')}
+                className={`py-2 px-3 rounded-lg border text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+                  priority === 'low'
+                    ? 'bg-sky-600 text-white border-sky-700 ring-2 ring-sky-300'
+                    : 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${priority === 'low' ? 'bg-white' : 'bg-sky-600'}`} />
+                <span>সাধারণ (Low)</span>
+              </button>
             </div>
           </div>
 

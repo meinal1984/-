@@ -62,7 +62,7 @@ const DEFAULT_RECIPIENTS: Recipient[] = [
   },
 ];
 
-export const NotificationModal: React.FC<Props> = ({ isOpen, onClose, document }) => {
+export const NotificationModal: React.FC<Props> = ({ isOpen, onClose, document: scheduleDoc }) => {
   const [activeTab, setActiveTab] = useState<'whatsapp' | 'email' | 'contacts' | 'auto'>('whatsapp');
   
   // Contacts State
@@ -100,19 +100,19 @@ export const NotificationModal: React.FC<Props> = ({ isOpen, onClose, document }
   const [newWhatsapp, setNewWhatsapp] = useState('');
 
   useEffect(() => {
-    if (document) {
-      const formattedDate = formatBengaliDate(document.date) || 'আজকের';
-      setEmailSubject(`জরুরি নোটিশ: ${document.letterhead?.docHeading || 'দৈনন্দিন কর্মসূচি'} (${formattedDate})`);
+    if (scheduleDoc) {
+      const formattedDate = formatBengaliDate(scheduleDoc.date) || 'আজকের';
+      setEmailSubject(`জরুরি নোটিশ: ${scheduleDoc.letterhead?.docHeading || 'দৈনন্দিন কর্মসূচি'} (${formattedDate})`);
     }
-  }, [document]);
+  }, [scheduleDoc]);
 
   useEffect(() => {
     localStorage.setItem('schedule_notification_recipients', JSON.stringify(recipients));
   }, [recipients]);
 
-  if (!isOpen || !document) return null;
+  if (!isOpen || !scheduleDoc) return null;
 
-  const formattedText = generateShareableText(document);
+  const formattedText = generateShareableText(scheduleDoc);
 
   // Clean WhatsApp Number format
   const getCleanPhone = (phone: string) => {
@@ -162,7 +162,7 @@ export const NotificationModal: React.FC<Props> = ({ isOpen, onClose, document }
           recipients: activeRecs,
           subject: emailSubject,
           message: formattedText,
-          documentId: document.id,
+          documentId: scheduleDoc.id,
         }),
       });
 

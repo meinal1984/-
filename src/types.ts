@@ -1,3 +1,5 @@
+export type PriorityLevel = 'high' | 'medium' | 'low';
+
 export interface ScheduleItem {
   id: string;
   serialNo?: string;      // ক্রমিক নং (ঐচ্ছিক)
@@ -8,6 +10,7 @@ export interface ScheduleItem {
   description: string;    // সভার বিষয় / বিবরণ (e.g. "প্রকল্প স্টিয়ারিং কমিটির সভা")
   chairperson: string;    // সভাপতি (e.g. "সচিব")
   remarks: string;        // মন্তব্য
+  priority?: PriorityLevel; // গুরুত্ব / অগ্রাধিকার (high | medium | low)
   completed?: boolean;
   archived?: boolean;     // আর্কাইভ স্ট্যাটাস
   archivedAt?: string;    // আর্কাইভে প্রেরণের সময়কাল
@@ -54,6 +57,27 @@ export interface LetterheadConfig {
   printMargins?: PrintMargins;
   pageSize?: PageSize;
   pageOrientation?: PageOrientation;
+}
+
+export interface ScheduleTemplateItem {
+  serialNo?: string;
+  dateAndDay: string;
+  timeOnly: string;
+  venue: string;
+  description: string;
+  chairperson: string;
+  remarks: string;
+}
+
+export interface ScheduleTemplate {
+  id: string;
+  title: string;
+  category?: string;
+  description?: string;
+  isBuiltIn?: boolean;
+  letterhead?: Partial<LetterheadConfig>;
+  items: ScheduleTemplateItem[];
+  createdAt?: string;
 }
 
 export interface ScheduleDocument {

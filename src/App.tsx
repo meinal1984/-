@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ScheduleDocument, ScheduleItem, LetterheadConfig } from './types';
 import { fetchSchedules, saveSchedule, deleteSchedule } from './utils/storage';
-import { formatBengaliDate, toBengaliNumerals, getCurrentBengaliMonthYear } from './utils/bengaliUtils';
+import { formatBengaliDate, formatBengaliDateAndDay, toBengaliNumerals, getCurrentBengaliMonthYear } from './utils/bengaliUtils';
 import { HeaderNav } from './components/HeaderNav';
 import { GovernmentLetterhead } from './components/GovernmentLetterhead';
 import { ScheduleTable } from './components/ScheduleTable';
@@ -15,7 +15,8 @@ import { GmailModal } from './components/GmailModal';
 import { DriveModal } from './components/DriveModal';
 import { ArchiveModal } from './components/ArchiveModal';
 import { AutoSaveIndicator } from './components/AutoSaveIndicator';
-import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, Bell, FileSpreadsheet, Archive } from 'lucide-react';
+import { exportScheduleToExcel } from './utils/excelExport';
+import { Plus, Calendar, Trash2, Edit3, Printer, Share2, FileText, CheckCircle, Bell, FileSpreadsheet, Archive, Download } from 'lucide-react';
 
 export default function App() {
   const [documents, setDocuments] = useState<ScheduleDocument[]>([]);
@@ -57,8 +58,44 @@ export default function App() {
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
-      const docs = await fetchSchedules();
+      let docs = await fetchSchedules();
       if (docs && docs.length > 0) {
+        // Sanitize documents to ensure left = bd_crest and right = bfa_logo if custom URLs are duplicated or stale, and sanitize item dates
+        const todayISO = new Date().toISOString().split('T')[0];
+        docs = docs.map((doc) => {
+          let lh = doc.letterhead;
+          if (lh) {
+            lh = { ...lh };
+            if (lh.customLogoUrl && lh.customLogoUrl === lh.customRightLogoUrl) {
+              delete lh.customLogoUrl;
+            }
+            if (!lh.emblemPreset) lh.emblemPreset = 'bd_crest';
+            if (!lh.rightLogoPreset) lh.rightLogoPreset = 'bfa_logo';
+          }
+          const sanitizedItems = (doc.items || []).map((item) => {
+            const dateStr = doc.date || todayISO;
+            const defaultDateAndDay = formatBengaliDateAndDay(dateStr);
+            const isTimeOnly = (str?: string) =>
+              str && (str.includes('সকাল') || str.includes('দুপুর') || str.includes('বিকাল') || str.includes('সন্ধ্যা') || str.includes('রাত') || str.includes('টা') || str.includes('মিনিট'));
+
+            let dateAndDay = item.dateAndDay;
+            let timeOnly = item.timeOnly;
+
+            if (!dateAndDay || isTimeOnly(dateAndDay)) {
+              if (isTimeOnly(item.dateTime) && !timeOnly) {
+                timeOnly = item.dateTime;
+              }
+              dateAndDay = defaultDateAndDay;
+            }
+
+            return {
+              ...item,
+              dateAndDay,
+              timeOnly: timeOnly || '',
+            };
+          });
+          return { ...doc, letterhead: lh, items: sanitizedItems };
+        });
         setDocuments(docs);
         setActiveDocId(docs[0].id);
       } else {
@@ -475,6 +512,7 @@ export default function App() {
         onOpenGmailModal={() => setIsGmailModalOpen(true)}
         onOpenDriveModal={() => setIsDriveModalOpen(true)}
         onOpenArchiveModal={() => setIsArchiveModalOpen(true)}
+        onExportExcel={() => exportScheduleToExcel(displayDoc)}
         archivedCount={archivedItems.length}
         isSaving={isSaving}
         saveStatus={saveStatus}
@@ -532,6 +570,16 @@ export default function App() {
                   {toBengaliNumerals(archivedItems.length.toString())}
                 </span>
               )}
+            </button>
+
+            {/* Excel (.xlsx) Export Button */}
+            <button
+              onClick={() => exportScheduleToExcel(displayDoc)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-800 hover:bg-emerald-900 text-emerald-100 border border-emerald-700 font-semibold text-xs sm:text-sm rounded-lg shadow-2xs transition-all active:scale-98 cursor-pointer"
+              title="বর্তমান সূচি এক্সেল (.xlsx) স্প্রেডশিট ফাইলে ডাউনলোড করুন"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-300" />
+              <span>এক্সেল (.xlsx)</span>
             </button>
 
             {/* Notification Button */}

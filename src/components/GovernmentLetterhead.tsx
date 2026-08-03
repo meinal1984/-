@@ -89,7 +89,7 @@ export const GovernmentLetterhead: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Right: Department/Project Logo */}
+        {/* Right: Department/Project Logo (BFA Official Logo) */}
         <div style={{ width: '18%', minWidth: '70px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           {config?.showRightLogo !== false && (
             config?.customRightLogoUrl ? (
@@ -97,12 +97,12 @@ export const GovernmentLetterhead: React.FC<Props> = ({
                 src={config.customRightLogoUrl}
                 alt="Department Logo"
                 className="h-16 w-16 object-contain"
-                style={{ width: '64px', height: '64px', maxWidth: '64px', maxHeight: '64px', objectFit: 'contain' }}
+                style={{ width: '68px', height: '68px', maxWidth: '68px', maxHeight: '68px', objectFit: 'contain' }}
                 referrerPolicy="no-referrer"
               />
             ) : (
               <DepartmentLogo
-                size={64}
+                size={68}
                 variant={config?.rightLogoPreset || 'bfa_logo'}
               />
             )
