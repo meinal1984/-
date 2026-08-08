@@ -1,3 +1,5 @@
+import { ScheduleItem } from '../types';
+
 // Bengali numeral conversion maps
 const englishToBengaliDigits: { [key: string]: string } = {
   '0': '০',
@@ -207,3 +209,122 @@ export function generateShareableText(doc: any): string {
 
   return text;
 }
+
+const BENGALI_MONTH_MAP: { [key: string]: number } = {
+  'জানুয়ারি': 1, 'january': 1, 'jan': 1,
+  'ফেব্রুয়ারি': 2, 'february': 2, 'feb': 2,
+  'মার্চ': 3, 'march': 3, 'mar': 3,
+  'এপ্রিল': 4, 'april': 4, 'apr': 4,
+  'মে': 5, 'may': 5,
+  'জুন': 6, 'june': 6, 'jun': 6,
+  'জুলাই': 7, 'july': 7, 'jul': 7,
+  'আগস্ট': 8, 'august': 8, 'aug': 8,
+  'সেপ্টেম্বর': 9, 'september': 9, 'sep': 9,
+  'অক্টোবর': 10, 'october': 10, 'oct': 10,
+  'নভেম্বর': 11, 'november': 11, 'nov': 11,
+  'ডিসেম্বর': 12, 'december': 12, 'dec': 12,
+};
+
+/**
+ * Extracts comparable ISO YYYY-MM-DD string from a ScheduleItem
+ */
+export function parseItemDate(item: Partial<ScheduleItem>): string {
+  if (item.rawDate && /^\d{4}-\d{2}-\d{2}$/.test(item.rawDate)) {
+    return item.rawDate;
+  }
+
+  const rawStr = item.dateAndDay || item.dateTime || '';
+  const engStr = toEnglishNumerals(rawStr);
+  if (!engStr) return '9999-99-99';
+
+  // Format 1: DD.MM.YYYY or DD/MM/YYYY or DD-MM-YYYY (e.g. 09.06.2025)
+  const dmyMatch = engStr.match(/(\d{1,2})[\.\/-](\d{1,2})[\.\/-](\d{4})/);
+  if (dmyMatch) {
+    const day = dmyMatch[1].padStart(2, '0');
+    const month = dmyMatch[2].padStart(2, '0');
+    const year = dmyMatch[3];
+    return `${year}-${month}-${day}`;
+  }
+
+  // Format 2: YYYY.MM.DD or YYYY-MM-DD
+  const ymdMatch = engStr.match(/(\d{4})[\.\/-](\d{1,2})[\.\/-](\d{1,2})/);
+  if (ymdMatch) {
+    const year = ymdMatch[1];
+    const month = ymdMatch[2].padStart(2, '0');
+    const day = ymdMatch[3].padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Format 3: "15 June 2025" or "১৫ জুন ২০২৫" or "১ আগস্ট ২০২৬"
+  const wordMonthMatch = rawStr.match(/(\d+|[০-৯]+)\s+([অ-হA-Za-z]+)\s+(\d+|[০-৯]+)/);
+  if (wordMonthMatch) {
+    const dayStr = toEnglishNumerals(wordMonthMatch[1]).padStart(2, '0');
+    const monthName = wordMonthMatch[2].toLowerCase();
+    const yearStr = toEnglishNumerals(wordMonthMatch[3]);
+    const monthNum = BENGALI_MONTH_MAP[monthName] || BENGALI_MONTH_MAP[wordMonthMatch[2]];
+    if (monthNum) {
+      return `${yearStr}-${String(monthNum).padStart(2, '0')}-${dayStr}`;
+    }
+  }
+
+  return '9999-99-99';
+}
+
+/**
+ * Extracts 24-hr time HH:mm from a ScheduleItem
+ */
+export function parseItemTime(item: Partial<ScheduleItem>): string {
+  if (item.rawTime && /^\d{1,2}:\d{2}$/.test(item.rawTime)) {
+    const [h, m] = item.rawTime.split(':');
+    return `${h.padStart(2, '0')}:${m}`;
+  }
+
+  const origStr = item.timeOnly || item.dateTime || '';
+  const engStr = toEnglishNumerals(origStr);
+  if (!engStr) return '00:00';
+
+  const timeMatch = engStr.match(/(\d{1,2}):(\d{2})/);
+  if (timeMatch) {
+    let hour = parseInt(timeMatch[1], 10);
+    const minute = timeMatch[2];
+
+    const isPm = /pm|পিএম|দুপুর|বিকাল|সন্ধ্যা|রাত/i.test(origStr);
+    const isAm = /am|এএম|সকাল|ভোর/i.test(origStr);
+
+    if (isPm) {
+      if (hour < 12) hour += 12;
+    } else if (isAm) {
+      if (hour === 12) hour = 0;
+    }
+
+    return `${String(hour).padStart(2, '0')}:${minute}`;
+  }
+
+  return '00:00';
+}
+
+/**
+ * Auto-sorts schedule items chronologically by date and time, and updates serial numbers (১, ২, ৩...)
+ */
+export function sortScheduleItems<T extends ScheduleItem>(items: T[], reindexSerial = true): T[] {
+  const sorted = [...items].sort((a, b) => {
+    const dateA = parseItemDate(a);
+    const dateB = parseItemDate(b);
+    if (dateA !== dateB) {
+      return dateA.localeCompare(dateB);
+    }
+    const timeA = parseItemTime(a);
+    const timeB = parseItemTime(b);
+    return timeA.localeCompare(timeB);
+  });
+
+  if (reindexSerial) {
+    return sorted.map((item, index) => ({
+      ...item,
+      serialNo: toBengaliNumerals(index + 1),
+    }));
+  }
+
+  return sorted;
+}
+

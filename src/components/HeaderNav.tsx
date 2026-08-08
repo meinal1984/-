@@ -2,7 +2,7 @@ import React from 'react';
 import { ScheduleDocument } from '../types';
 import { GovernmentEmblem } from './GovernmentEmblem';
 import { DepartmentLogo } from './DepartmentLogo';
-import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet, Mail, HardDrive, Archive } from 'lucide-react';
+import { Calendar, Plus, Printer, Share2, Edit3, Bell, FileSpreadsheet, Mail, HardDrive, Archive, Sparkles } from 'lucide-react';
 import { formatBengaliDate, toBengaliNumerals } from '../utils/bengaliUtils';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 
@@ -19,6 +19,7 @@ interface Props {
   onOpenGmailModal: () => void;
   onOpenDriveModal?: () => void;
   onOpenArchiveModal?: () => void;
+  onOpenGeminiModal?: () => void;
   onExportExcel?: () => void;
   archivedCount?: number;
   isSaving?: boolean;
@@ -39,6 +40,7 @@ export const HeaderNav: React.FC<Props> = ({
   onOpenGmailModal,
   onOpenDriveModal,
   onOpenArchiveModal,
+  onOpenGeminiModal,
   onExportExcel,
   archivedCount = 0,
   isSaving = false,
@@ -107,6 +109,20 @@ export const HeaderNav: React.FC<Props> = ({
             <Plus className="w-3.5 h-3.5 text-emerald-400" />
             <span>নতুন সূচি</span>
           </button>
+
+          {onOpenGeminiModal && (
+            <button
+              onClick={onOpenGeminiModal}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-700 hover:from-emerald-700 hover:to-teal-600 text-white border border-emerald-500/60 text-xs font-bold rounded-lg shadow-md hover:shadow-emerald-900/30 transition-all cursor-pointer ring-1 ring-emerald-400/30 group"
+              title="Gemini AI বুদ্ধিমত্তা: অসংগঠিত টেক্সট পার্সিং, সরকারি প্রমিতকরণ, কার্যবিবরণী ও নোটিশ জেনারেটর"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-emerald-300 group-hover:rotate-12 transition-transform animate-pulse" />
+              <span>Gemini AI সহকারী</span>
+              <span className="px-1.5 py-0.2 bg-emerald-400 text-slate-950 font-sans text-[9px] font-black rounded-full uppercase tracking-tighter">
+                AI
+              </span>
+            </button>
+          )}
 
           {onOpenArchiveModal && (
             <button

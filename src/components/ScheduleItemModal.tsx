@@ -170,6 +170,8 @@ export const ScheduleItemModal: React.FC<Props> = ({
       serialNo: itemToEdit?.serialNo || toBengaliNumerals(suggestedSerialNo),
       dateAndDay: dateAndDay.trim(),
       timeOnly: timeOnly.trim(),
+      rawDate: rawDate || itemToEdit?.rawDate,
+      rawTime: rawTime || itemToEdit?.rawTime,
       dateTime: `${dateAndDay.trim()} ${timeOnly.trim()}`.trim(),
       description: description.trim(),
       venue: venue.trim(),

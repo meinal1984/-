@@ -17,6 +17,9 @@ import {
   Edit3,
   Archive,
   AlertCircle,
+  ArrowUpDown,
+  Sparkles,
+  Wand2,
 } from 'lucide-react';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 import { toBengaliNumerals } from '../utils/bengaliUtils';
@@ -33,6 +36,8 @@ interface Props {
   onArchiveItem?: (id: string) => void;
   onArchiveCompletedItems?: () => void;
   onOpenArchiveModal?: () => void;
+  onAutoSort?: () => void;
+  onOpenGeminiModal?: (initialTab?: 'parser' | 'formalizer' | 'briefing' | 'conflicts' | 'chat') => void;
   archivedCount?: number;
   saveStatus?: 'saved' | 'syncing' | 'error';
   lastSavedTime?: string | null;
@@ -50,6 +55,8 @@ export const ScheduleTable: React.FC<Props> = ({
   onArchiveItem,
   onArchiveCompletedItems,
   onOpenArchiveModal,
+  onAutoSort,
+  onOpenGeminiModal,
   archivedCount = 0,
   saveStatus = 'saved',
   lastSavedTime,
@@ -87,7 +94,29 @@ export const ScheduleTable: React.FC<Props> = ({
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Quick Archive Completed Button */}
+          {/* Gemini AI Intelligence Suite Button */}
+          {onOpenGeminiModal && (
+            <button
+              onClick={() => onOpenGeminiModal('parser')}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 text-white text-xs sm:text-sm font-bold rounded-lg shadow-sm border border-emerald-600/50 transition-all cursor-pointer ring-1 ring-emerald-400/20"
+              title="Gemini AI দিয়ে টেক্সট পার্স, সরকারি প্রমিতকরণ ও নোটিশ তৈরি করুন"
+            >
+              <Sparkles className="w-4 h-4 text-emerald-300 animate-pulse" />
+              <span>Gemini AI টুলস</span>
+            </button>
+          )}
+
+          {/* Auto Sort Button */}
+          {onAutoSort && (
+            <button
+              onClick={onAutoSort}
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs sm:text-sm font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
+              title="তারিখ ও সময় অনুযায়ী সকল কর্মসূচি স্বয়ংক্রিয়ভাবে সাজান"
+            >
+              <ArrowUpDown className="w-4 h-4 text-emerald-700" />
+              <span>স্মার্ট রিঅর্ডার</span>
+            </button>
+          )}
           {completedItemsCount > 0 && onArchiveCompletedItems && (
             <button
               onClick={onArchiveCompletedItems}
